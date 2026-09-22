@@ -296,19 +296,27 @@ section.panel .sub {
 .shots-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 14px;
+  gap: 18px;
 }
-.shot-slot {
-  aspect-ratio: 16 / 10;
-  border: 1px dashed var(--comb-line);
+
+.shot {
+  margin: 0;
+}
+
+.shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--comb-line);
   border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--ink-faint);
+  background: var(--bg);
+}
+
+.shot figcaption {
+  margin-top: 8px;
   font-size: 0.8rem;
+  color: var(--ink-faint);
   text-align: center;
-  padding: 12px;
 }
 
 footer.site {
