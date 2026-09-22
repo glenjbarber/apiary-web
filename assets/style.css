@@ -6,6 +6,7 @@
   --ink-faint: #7d7466;
   --amber: #e8a33d;
   --amber-bright: #f5b955;
+  --sponsor: #e0699c;
   --comb-line: #3a3327;
   --ok: #7cb87f;
   --fail: #d9704f;
@@ -23,6 +24,7 @@
     --ink-faint: #8c8270;
     --amber: #b3701a;
     --amber-bright: #92590f;
+    --sponsor: #b13d72;
     --comb-line: #e3d8c0;
   }
 }
@@ -35,6 +37,7 @@
   --ink-faint: #8c8270;
   --amber: #b3701a;
   --amber-bright: #92590f;
+  --sponsor: #b13d72;
   --comb-line: #e3d8c0;
 }
 
@@ -181,6 +184,20 @@ h1 .accent { color: var(--amber); font-style: italic; }
 .btn.primary:hover { background: var(--amber-bright); border-color: var(--amber-bright); }
 
 .btn.ghost:hover { border-color: var(--amber); color: var(--amber); }
+
+.btn.sponsor {
+  border-color: var(--sponsor);
+  color: var(--sponsor);
+}
+.btn.sponsor svg { color: var(--sponsor); }
+.btn.sponsor:hover {
+  background: var(--sponsor);
+  border-color: var(--sponsor);
+  color: var(--bg-raised);
+}
+
+nav.site-nav a.nav-sponsor { color: var(--sponsor); }
+nav.site-nav a.nav-sponsor:hover { color: var(--sponsor); border-bottom-color: var(--sponsor); }
 
 .btn svg { width: 15px; height: 15px; }
 
