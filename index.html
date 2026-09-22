@@ -89,15 +89,21 @@
       <p class="sub">From a live 4-Comb home-lab Colony.</p>
       <div class="shots-grid">
         <figure class="shot">
-          <img src="assets/screenshots/colony-overview.png" alt="Apiary's Command Center page, showing a 4-Comb Colony with live control-plane topology and evidence-backed health status.">
+          <button type="button" class="shot-btn" data-full="assets/screenshots/colony-overview.png" data-caption="Command Center">
+            <img src="assets/screenshots/colony-overview.png" alt="Apiary's Command Center page, showing a 4-Comb Colony with live control-plane topology and evidence-backed health status.">
+          </button>
           <figcaption>Command Center</figcaption>
         </figure>
         <figure class="shot">
-          <img src="assets/screenshots/create-vm.png" alt="The Create Virtual Machine form, showing identity, compute, and per-Comb placement fields with live VM-capability checks.">
+          <button type="button" class="shot-btn" data-full="assets/screenshots/create-vm.png" data-caption="Create Virtual Machine">
+            <img src="assets/screenshots/create-vm.png" alt="The Create Virtual Machine form, showing identity, compute, and per-Comb placement fields with live VM-capability checks.">
+          </button>
           <figcaption>Create Virtual Machine</figcaption>
         </figure>
         <figure class="shot">
-          <img src="assets/screenshots/coverage-map.png" alt="The Resilience Coverage Map, listing simulated failure scenarios per Comb with Survives or Unknown results.">
+          <button type="button" class="shot-btn" data-full="assets/screenshots/coverage-map.png" data-caption="Resilience Coverage Map">
+            <img src="assets/screenshots/coverage-map.png" alt="The Resilience Coverage Map, listing simulated failure scenarios per Comb with Survives or Unknown results.">
+          </button>
           <figcaption>Resilience Coverage Map</figcaption>
         </figure>
       </div>
@@ -110,5 +116,52 @@
   </footer>
 
 </div>
+
+<div class="lightbox" id="lightbox" hidden>
+  <button type="button" class="lightbox-close" id="lightbox-close" aria-label="Close">&times;</button>
+  <figure>
+    <img id="lightbox-img" src="" alt="">
+    <figcaption id="lightbox-caption"></figcaption>
+  </figure>
+</div>
+
+<script>
+(function () {
+  var lightbox = document.getElementById("lightbox");
+  var img = document.getElementById("lightbox-img");
+  var caption = document.getElementById("lightbox-caption");
+  var closeBtn = document.getElementById("lightbox-close");
+  var lastFocused = null;
+
+  function open(btn) {
+    lastFocused = document.activeElement;
+    img.src = btn.getAttribute("data-full");
+    img.alt = btn.querySelector("img").alt;
+    caption.textContent = btn.getAttribute("data-caption") || "";
+    lightbox.hidden = false;
+    document.body.style.overflow = "hidden";
+    closeBtn.focus();
+  }
+
+  function close() {
+    lightbox.hidden = true;
+    img.src = "";
+    document.body.style.overflow = "";
+    if (lastFocused) lastFocused.focus();
+  }
+
+  document.querySelectorAll(".shot-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () { open(btn); });
+  });
+
+  closeBtn.addEventListener("click", close);
+  lightbox.addEventListener("click", function (e) {
+    if (e.target === lightbox) close();
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && !lightbox.hidden) close();
+  });
+})();
+</script>
 </body>
 </html>
