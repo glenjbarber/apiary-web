@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apiary</title>
+<meta name="description" content="Apiary is an explainable, safety-conscious FreeBSD control plane for bhyve VMs and jails: a home-lab virtualization platform built on Raft consensus, ZFS, and PF.">
+<link rel="icon" href="assets/mark.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="hex-field" aria-hidden="true"></div>
+<div class="wrap">
+
+  <header class="site">
+    <a class="brand" href="/">
+      <img src="assets/mark.svg" alt="" width="30" height="30">
+      <span class="brand-name">Apiary</span>
+    </a>
+    <nav class="site-nav">
+      <a href="/" aria-current="page">Overview</a>
+      <a href="/status.html">Build Status</a>
+      <a href="https://github.com/glenjbarber/apiary">GitHub</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="eyebrow">The bhyve yard</p>
+      <h1>A FreeBSD control plane<br>you can actually <span class="accent">explain</span>.</h1>
+      <p class="lede">
+        Apiary runs a small Colony of FreeBSD hosts as one thing: bhyve VMs
+        and jails, placed and reconciled over Raft consensus, with ZFS
+        storage, PF networking, and a web control plane that shows its
+        work - not a black box wrapped around libvirt.
+      </p>
+      <div class="cta-row">
+        <a class="btn primary" href="https://github.com/glenjbarber/apiary">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+          View on GitHub
+        </a>
+        <a class="btn ghost" href="/status.html">Build Status</a>
+        <a class="btn ghost" href="https://github.com/glenjbarber/apiary/tree/main/docs/adr">Architecture Decisions</a>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Colony &rarr; Comb &rarr; Cell</h2>
+      <p class="sub">Apiary's own vocabulary for the physical containment hierarchy it manages.</p>
+      <dl class="terms">
+        <div class="term">
+          <dt>Colony</dt>
+          <dd>The whole cluster: every Comb, and everything running on them, held together by a single Raft consensus group.</dd>
+        </div>
+        <div class="term">
+          <dt>Comb</dt>
+          <dd>One physical FreeBSD host. A Colony can be a single standalone Comb or several Combs joined together - both are first-class, not a degraded state.</dd>
+        </div>
+        <div class="term">
+          <dt>Cell</dt>
+          <dd>One VM or jail. Placed on a Comb, reconciled continuously against its desired state, and visible cluster-wide regardless of which Comb owns it.</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="panel">
+      <h2>Built to show its work</h2>
+      <p class="sub">A running list of what makes Apiary a control plane instead of a wrapper.</p>
+      <dl class="terms">
+        <div class="term">
+          <dt>Raft, not a leader-election script</dt>
+          <dd>Cluster membership, placement, and configuration are Raft-committed state (hashicorp/raft), with guarded join/approve flows instead of hand-edited peer lists.</dd>
+        </div>
+        <div class="term">
+          <dt>Evidence, not vibes</dt>
+          <dd>Automated assumption checks, a Why-Not engine, and a resilience coverage map explain what's actually true about the Colony right now, and what would break it.</dd>
+        </div>
+        <div class="term">
+          <dt>FreeBSD-native</dt>
+          <dd>bhyve, jails, ZFS, PF, and rc.d, used the way FreeBSD already does this well - a bolt-on control plane, not a reimplementation of the OS underneath it.</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="panel">
+      <h2>Screenshots</h2>
+      <p class="sub">Coming down the road, from a live home-lab Colony.</p>
+      <div class="shots-grid">
+        <div class="shot-slot">Colony overview</div>
+        <div class="shot-slot">Create Jail / Create VM</div>
+        <div class="shot-slot">Resilience Coverage Map</div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site">
+    <span>Apiary is open source, built and run out of a home lab.</span>
+    <a href="https://github.com/glenjbarber/apiary">github.com/glenjbarber/apiary</a>
+  </footer>
+
+</div>
+</body>
+</html>

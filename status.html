@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Build Status - Apiary</title>
+<meta name="description" content="Live CI build status for the Apiary FreeBSD control plane, pulled from GitHub Actions.">
+<link rel="icon" href="assets/mark.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="hex-field" aria-hidden="true"></div>
+<div class="wrap">
+
+  <header class="site">
+    <a class="brand" href="/">
+      <img src="assets/mark.svg" alt="" width="30" height="30">
+      <span class="brand-name">Apiary</span>
+    </a>
+    <nav class="site-nav">
+      <a href="/">Overview</a>
+      <a href="/status.html" aria-current="page">Build Status</a>
+      <a href="https://github.com/glenjbarber/apiary">GitHub</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" style="padding-top:40px; padding-bottom:24px;">
+      <p class="eyebrow">Go CI</p>
+      <h1 style="font-size:clamp(1.8rem,4vw,2.4rem);">Build Status</h1>
+      <p class="lede">
+        Every push to <code>main</code> and every pull request runs
+        gofmt, go vet, the full test suite, and a full build on GitHub
+        Actions. This page reads that history straight from the GitHub
+        API - nothing is cached or hand-updated.
+      </p>
+      <div class="badge-row">
+        <a href="https://github.com/glenjbarber/apiary/actions/workflows/go-ci.yml">
+          <img src="https://github.com/glenjbarber/apiary/actions/workflows/go-ci.yml/badge.svg?branch=main" alt="Go CI status">
+        </a>
+        <a class="btn ghost" href="https://github.com/glenjbarber/apiary/actions/workflows/go-ci.yml">Open workflow on GitHub</a>
+      </div>
+    </section>
+
+    <div id="status-strip" class="status-strip">
+      <span class="dot pending" id="status-dot"></span>
+      <span id="status-text">Checking latest run on GitHub Actions...</span>
+    </div>
+
+    <section class="panel">
+      <h2>Recent runs</h2>
+      <p class="sub">Last 10 runs of the <code>Go CI</code> workflow, most recent first.</p>
+      <div id="runs-loading" class="load-note">Loading from api.github.com...</div>
+      <div id="runs-error" class="load-note" style="display:none;">
+        Could not reach the GitHub API right now (it rate-limits unauthenticated
+        requests to 60/hour per visitor). <a href="https://github.com/glenjbarber/apiary/actions/workflows/go-ci.yml">View the full run history on GitHub</a> instead.
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="run-table" id="runs-table" style="display:none;">
+          <thead>
+            <tr><th>Result</th><th>Commit</th><th>Branch</th><th>When</th></tr>
+          </thead>
+          <tbody id="runs-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site">
+    <span>Apiary is open source, built and run out of a home lab.</span>
+    <a href="https://github.com/glenjbarber/apiary">github.com/glenjbarber/apiary</a>
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  var REPO = "glenjbarber/apiary";
+  var WORKFLOW = "go-ci.yml";
+  var API = "https://api.github.com/repos/" + REPO + "/actions/workflows/" + WORKFLOW + "/runs?per_page=10";
+
+  function timeAgo(iso) {
+    var diff = (Date.now() - new Date(iso).getTime()) / 1000;
+    var units = [["day", 86400], ["hour", 3600], ["minute", 60]];
+    for (var i = 0; i < units.length; i++) {
+      var v = Math.floor(diff / units[i][1]);
+      if (v >= 1) return v + " " + units[i][0] + (v === 1 ? "" : "s") + " ago";
+    }
+    return "just now";
+  }
+
+  function badge(run) {
+    if (run.status !== "completed") {
+      return '<span class="run-badge other">&#9679; ' + run.status + "</span>";
+    }
+    if (run.conclusion === "success") {
+      return '<span class="run-badge success">&#9679; passed</span>';
+    }
+    if (run.conclusion === "failure") {
+      return '<span class="run-badge failure">&#9679; failed</span>';
+    }
+    return '<span class="run-badge other">&#9679; ' + run.conclusion + "</span>";
+  }
+
+  fetch(API, { headers: { Accept: "application/vnd.github+json" } })
+    .then(function (r) {
+      if (!r.ok) throw new Error("GitHub API returned " + r.status);
+      return r.json();
+    })
+    .then(function (data) {
+      var runs = (data.workflow_runs || []).slice(0, 10);
+      if (!runs.length) throw new Error("no runs returned");
+
+      var latest = runs[0];
+      var dot = document.getElementById("status-dot");
+      var text = document.getElementById("status-text");
+      if (latest.status === "completed" && latest.conclusion === "success") {
+        dot.className = "dot ok";
+        text.innerHTML = 'Latest run on <code>' + latest.head_branch + '</code> passed, ' + timeAgo(latest.updated_at) + '. <a href="' + latest.html_url + '">View run</a>';
+      } else if (latest.status !== "completed") {
+        dot.className = "dot pending";
+        text.innerHTML = 'A run on <code>' + latest.head_branch + '</code> is ' + latest.status + '. <a href="' + latest.html_url + '">View run</a>';
+      } else {
+        dot.className = "dot fail";
+        text.innerHTML = 'Latest run on <code>' + latest.head_branch + '</code> ' + latest.conclusion + ', ' + timeAgo(latest.updated_at) + '. <a href="' + latest.html_url + '">View run</a>';
+      }
+
+      var body = document.getElementById("runs-body");
+      runs.forEach(function (run) {
+        var tr = document.createElement("tr");
+        var msg = (run.head_commit && run.head_commit.message ? run.head_commit.message.split("\n")[0] : run.display_title || "");
+        tr.innerHTML =
+          "<td>" + badge(run) + "</td>" +
+          '<td class="run-msg"><a href="' + run.html_url + '" title="' + msg.replace(/"/g, "&quot;") + '">' + msg + "</a></td>" +
+          "<td>" + run.head_branch + "</td>" +
+          "<td>" + timeAgo(run.updated_at) + "</td>";
+        body.appendChild(tr);
+      });
+
+      document.getElementById("runs-loading").style.display = "none";
+      document.getElementById("runs-table").style.display = "table";
+    })
+    .catch(function () {
+      document.getElementById("status-dot").className = "dot pending";
+      document.getElementById("status-text").innerHTML =
+        'Live status unavailable right now. <a href="https://github.com/glenjbarber/apiary/actions/workflows/go-ci.yml">Check GitHub Actions directly</a>.';
+      document.getElementById("runs-loading").style.display = "none";
+      document.getElementById("runs-error").style.display = "block";
+    });
+})();
+</script>
+</body>
+</html>

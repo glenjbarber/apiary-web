@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="84" height="96" viewBox="0 0 84 96">
+  <g fill="none" stroke="#8a734a" stroke-width="1" opacity="0.35">
+    <path d="M21 0 L63 0 L84 36 L63 72 L21 72 L0 36 Z" transform="translate(0,-24)"/>
+    <path d="M21 0 L63 0 L84 36 L63 72 L21 72 L0 36 Z" transform="translate(0,48)"/>
+    <path d="M21 0 L63 0 L84 36 L63 72 L21 72 L0 36 Z" transform="translate(-42,12)"/>
+    <path d="M21 0 L63 0 L84 36 L63 72 L21 72 L0 36 Z" transform="translate(42,12)"/>
+  </g>
+</svg>
