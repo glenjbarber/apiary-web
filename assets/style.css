@@ -222,6 +222,17 @@ section.panel .sub {
   margin: 0 0 20px;
 }
 
+section.panel .sub a {
+  color: var(--ink-dim);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--ink-faint);
+}
+
+section.panel .sub a:hover {
+  color: var(--amber);
+  border-bottom-color: var(--amber);
+}
+
 .terms {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -241,6 +252,74 @@ section.panel .sub {
   color: var(--ink-dim);
   font-size: 0.88rem;
   line-height: 1.5;
+}
+
+code {
+  font-family: var(--mono);
+  font-size: 0.92em;
+  color: var(--amber);
+  background: color-mix(in srgb, var(--amber) 10%, transparent);
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+.recent {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 20px;
+}
+
+.recent > li {
+  display: grid;
+  grid-template-columns: 62px 1fr;
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--comb-line);
+}
+
+.recent > li:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.recent .when {
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding-top: 4px;
+  white-space: nowrap;
+}
+
+.recent h3 {
+  font-family: var(--display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0 0 4px;
+  color: var(--ink);
+}
+
+.recent p {
+  margin: 0;
+  color: var(--ink-dim);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.recent .ref {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--ink-faint);
+}
+
+.recent .ref:hover {
+  color: var(--amber);
+  border-bottom-color: var(--amber);
 }
 
 .status-strip {
@@ -375,6 +454,9 @@ footer.site a:hover { color: var(--amber); }
   header.site { flex-direction: column; align-items: flex-start; gap: 12px; }
   .cta-row { flex-direction: column; align-items: stretch; }
   .btn { justify-content: center; }
+  section.panel { padding: 20px; }
+  .recent > li { grid-template-columns: 1fr; gap: 6px; }
+  .recent .when { padding-top: 0; }
 }
 
 .lightbox {

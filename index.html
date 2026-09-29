@@ -90,6 +90,148 @@
     </section>
 
     <section class="panel">
+      <h2>Recently</h2>
+      <p class="sub">
+        What has landed in <a href="https://github.com/glenjbarber/apiary/commits/main">main</a>
+        over the last few days. Every item below is merged, tested, and
+        linked to the reasoning behind it.
+      </p>
+      <ol class="recent">
+        <li>
+          <span class="when">29 Sep</span>
+          <div>
+            <h3>Joining the Colony takes two people</h3>
+            <p>
+              A Comb joining now needs two authorizing acts, from two
+              distinct API keys, presented to two distinct Combs. The
+              authority lives in a root-owned, single-use file recording
+              which Comb was authorized and under which TLS fingerprint.
+              The boundary is file ownership rather than a shared secret,
+              so there is nothing to rotate and nothing to leak;
+              <code>apiaryctl join-authorize</code> is the only supported
+              way to write it.
+            </p>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/blob/main/docs/adr/0147-automated-install-and-two-way-peer-authorized-join.md">ADR-0147, Part 3</a>
+          </div>
+        </li>
+        <li>
+          <span class="when">28 Sep</span>
+          <div>
+            <h3>An installer that needs no checkout</h3>
+            <p>
+              <code>apiaryctl install</code> takes a bare FreeBSD host to
+              an installed Comb - configuration, certificates, and
+              identity - from a root shell and nothing else. It changes
+              nothing without <code>--apply</code>, and the part of its
+              report worth reading is the list of what it decided
+              <em>not</em> to overwrite, and why.
+            </p>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/blob/main/docs/adr/0147-automated-install-and-two-way-peer-authorized-join.md">ADR-0147, Part 1</a>
+          </div>
+        </li>
+        <li>
+          <span class="when">28 Sep</span>
+          <div>
+            <h3>A join window, closed by default</h3>
+            <p>
+              A new Comb can only join while the Colony's join window is
+              open, and closed is the normal state - a request that
+              arrives at a closed Colony is refused by name. The window
+              is replicated Raft state rather than a flag in one Comb's
+              config file, and it carries an epoch, so a request approved
+              against the old window does not survive its reopening.
+              Alongside it, every Comb now derives its peer trust
+              anchor from a replicated trust store instead of naming its
+              own path. TLS by default is deliberately still not done:
+              encryption with an unverified certificate is a worse
+              failure than no encryption, so the trust anchor has to
+              land first.
+            </p>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/blob/main/docs/adr/0147-automated-install-and-two-way-peer-authorized-join.md">ADR-0147, Part 4</a>
+          </div>
+        </li>
+        <li>
+          <span class="when">28 Sep</span>
+          <div>
+            <h3>What a Comb actually needs to run</h3>
+            <p>
+              A build-time <code>src.conf</code> and
+              <code>make.conf</code> for a smaller FreeBSD 16 base, plus
+              a package deletion list for the base you already have.
+              Neither was written from general FreeBSD knowledge: every
+              command call site was swept, and then every wrapper
+              function behind them, because the first pass alone missed
+              <code>smart(8)</code> entirely.
+            </p>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/blob/main/docs/minimal-build.md">docs/minimal-build.md</a>
+          </div>
+        </li>
+        <li>
+          <span class="when">28 Sep</span>
+          <div>
+            <h3>25 mutations, 25 killed, 0 survived</h3>
+            <p>
+              The installer's test suite is now run against deliberately
+              broken code. The one mutant that survived the first pass
+              turned out to have found a real gap rather than a weak
+              test - nothing asserted what the summary reports after it
+              refuses something - so it became two new tests instead of a
+              suppressed failure.
+            </p>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/commit/534512e">Commit 534512e</a>
+          </div>
+        </li>
+        <li>
+          <span class="when">27 Sep</span>
+          <div>
+            <h3>Updating the Colony without punching a hole in quorum</h3>
+            <p>
+              A colony-wide update runs under a single-flight replicated
+              through Raft, and managerd hands the update over
+              cooperatively - which is what lets a controlled update
+              restart the very daemon driving it. A restart is confirmed
+              by its listener port, not by what <code>service(8)</code>
+              claims about it, and there is a test for exactly the case
+              where <code>service(8)</code> lies.
+            </p>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/blob/main/docs/adr/0146-controlled-update-managerd-handoff.md">ADR-0146</a>
+          </div>
+        </li>
+        <li>
+          <span class="when">26 Sep</span>
+          <div>
+            <h3>A code audit, and what it cost</h3>
+            <p>
+              15 findings across auth, join, Raft, login, and bhyve, from
+              static analysis plus manual triage of every hit that looked
+              real. Each one is either fixed with tests alongside it or
+              explicitly accepted with the reason written down - including
+              the two where the honest answer was that the exposure stays
+              until an operator sets an allowlist.
+            </p>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/blob/main/docs/audits/2026-09-26-code-audit.md">docs/audits/2026-09-26-code-audit.md</a>
+          </div>
+        </li>
+        <li>
+          <span class="when">26 Sep</span>
+          <div>
+            <h3>Seven states, none of which is "probably fine"</h3>
+            <p>
+              Every status badge in the UI now comes from one documented
+              vocabulary. <code>unknown</code> means the check did not
+              complete, <code>stale</code> means the observation is aging
+              out of its freshness window, and <code>contradictory</code>
+              means two evidence sources disagree with each other.
+              Silence is a verdict rather than an all-clear, so it never
+              renders green.
+            </p>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/blob/main/docs/adr/0144-web-ui-redesign.md">ADR-0144</a>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section class="panel">
       <h2>Screenshots</h2>
       <p class="sub">From a live 4-Comb home-lab Colony.</p>
       <div class="shots-grid">
