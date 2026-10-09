@@ -1,6 +1,2 @@
 .DS_Store
 staged/bin/
-worktrees/
-.orcli.log
-.orcli.log.lock
-.orcli.md
