@@ -86,12 +86,15 @@ header.site {
 .brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0;
   text-decoration: none;
   color: inherit;
+  background: #f7f2e7;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-.brand svg { width: 30px; height: 30px; flex: none; }
+.brand img { display: block; width: 150px; height: 72px; flex: none; }
 
 .brand-name {
   font-family: var(--display);
