@@ -89,28 +89,63 @@
     </section>
 
     <section class="panel">
-      <h2>Recently</h2>
+      <h2>Recent changes</h2>
       <p class="sub">
-        What has landed in <a href="https://github.com/glenjbarber/apiary/commits/main">main</a>
-        over the last few days. Every item below is merged, tested, and
-        linked to the reasoning behind it.
+        Selected changes merged to <a href="https://github.com/glenjbarber/apiary/commits/main">main</a>.
+        Each item links to its implementation or design record.
       </p>
       <ol class="recent">
         <li>
-          <span class="when">29 Sep</span>
+          <span class="when">14 Oct</span>
           <div>
-            <h3>Joining the Colony takes additional adminstrative steps</h3>
+            <h3>Colony joins now enforce the full authorization flow</h3>
             <p>
-              A Comb joining now needs two authorizing acts, from two
-              distinct API keys, presented to two distinct Combs. The
-              authority lives in a root-owned, single-use file recording
-              which Comb was authorized and under which TLS fingerprint.
-              The boundary is file ownership rather than a shared secret,
-              so there is nothing to rotate and nothing to leak;
-              <code>apiaryctl join-authorize</code> is the only supported
-              way to write it.
+              Approval requires a live join window, a matching unused entry
+              in the root-owned authorization store, and two approvals from
+              distinct API keys presented to distinct Combs - even when the
+              Colony currently has one member. The join path also records
+              which Comb handled each approval, checks the joining Comb's
+              reported certificate fingerprint, and refuses repeated first
+              authorizations.
             </p>
-            <a class="ref" href="https://github.com/glenjbarber/apiary/blob/main/docs/adr/0147-automated-install-and-two-way-peer-authorized-join.md">ADR-0147, Part 3</a>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/blob/main/docs/adr/0147-automated-install-and-two-way-peer-authorized-join.md">ADR-0147</a>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/commit/21bc2b4">Join-flow fixes</a>
+          </div>
+        </li>
+        <li>
+          <span class="when">14 Oct</span>
+          <div>
+            <h3>Join and authorization secrets are provisioned during setup</h3>
+            <p>
+              Installation and join setup now create the required secrets
+              automatically, so operators do not need to prepare them by
+              hand before using the guarded Colony join flow.
+            </p>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/commit/2f21950">Implementation</a>
+          </div>
+        </li>
+        <li>
+          <span class="when">14 Oct</span>
+          <div>
+            <h3>ISO upload forms reset after a successful upload</h3>
+            <p>
+              The upload form clears its file and fields after the server
+              accepts an ISO, confirming completion and leaving the form
+              ready for another image.
+            </p>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/commit/7e71f96">Implementation</a>
+          </div>
+        </li>
+        <li>
+          <span class="when">13 Oct</span>
+          <div>
+            <h3>Join approvals explain the required operator actions</h3>
+            <p>
+              The approval screen now labels the two authorization steps
+              clearly, and shows the information operators need to complete
+              each step on the appropriate Comb.
+            </p>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/commit/b307406">Implementation</a>
           </div>
         </li>
         <li>
