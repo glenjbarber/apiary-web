@@ -96,6 +96,48 @@
       </p>
       <ol class="recent">
         <li>
+          <span class="when">21 Oct</span>
+          <div>
+            <h3>Raft member traffic is now mutually authenticated TLS</h3>
+            <p>
+              Every Comb in the Colony now runs raft over mutual TLS, with a
+              Colony certificate authority created on the first Comb.
+              Manager-to-manager peer calls are on TLS by default, and an
+              explicit opt-out is required to turn either one off. HAST
+              replication and installer-driven certificate provisioning are
+              not covered yet.
+            </p>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/pull/149">Encrypt raft and peer transports (#149)</a>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/pull/152">Colony CA commands (#152)</a>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/blob/main/docs/adr/0155-colony-certificate-authority.md">ADR-0155</a>
+          </div>
+        </li>
+        <li>
+          <span class="when">20 Oct</span>
+          <div>
+            <h3>VM configuration can be edited, with restart-required changes</h3>
+            <p>
+              vCPU count and memory can be changed on an existing VM. Changes
+              apply on the next start. A memory or CPU increase is checked
+              against the node's capacity before it is accepted.
+            </p>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/pull/145">VM config edit (#145)</a>
+          </div>
+        </li>
+        <li>
+          <span class="when">20 Oct</span>
+          <div>
+            <h3>Jail IPv4 addresses can be requested at creation</h3>
+            <p>
+              A jail can request an IPv4 address when it is created, validated
+              against its network. Updating a VM or a jail no longer clears its
+              MAC or IP address.
+            </p>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/pull/147">Jail IPv4 (#147)</a>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/pull/148">UpdateVM keeps addresses (#148)</a>
+          </div>
+        </li>
+        <li>
           <span class="when">14 Oct</span>
           <div>
             <h3>Colony joins now enforce the full authorization flow</h3>
