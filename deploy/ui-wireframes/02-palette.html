@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apiary - 02 Palette</title>
+<link rel="stylesheet" href="wf-base.css">
+<style>
+  :root { --bg: #232d3f; --bg-2: #2a3549; --bg-3: #334058; --line: #3c4a63; --line-soft: #324058; }
+  .top {
+    height: 52px; display: flex; align-items: center; gap: 28px;
+    padding: 0 28px; border-bottom: 1px solid var(--line-soft); background: #202a3b;
+  }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; letter-spacing: .14em; font-size: 13px; }
+  .brand b { width: 14px; height: 14px; background: var(--accent); clip-path: polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%); }
+  .tabs { display: flex; gap: 2px; height: 100%; }
+  .tabs a { display: flex; align-items: center; padding: 0 12px; color: var(--muted); font-size: 13.5px; border-bottom: 2px solid transparent; }
+  .tabs a:hover { color: var(--ink); }
+  .tabs a.active { color: var(--ink); border-bottom-color: var(--accent); }
+  .find {
+    margin-left: auto; width: 320px; height: 32px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 10px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg);
+    color: var(--faint); font-size: 13px; cursor: text;
+  }
+  .me { width: 28px; height: 28px; border-radius: 50%; background: var(--bg-3); display: grid; place-items: center; font-size: 11px; color: var(--muted); }
+
+  main { max-width: 1160px; margin: 0 auto; padding: 36px 28px 80px; }
+  .headline { display: flex; align-items: baseline; gap: 14px; margin-bottom: 6px; }
+  .headline h1 { margin: 0; font-size: 26px; font-weight: 500; letter-spacing: -.01em; }
+  .sub { color: var(--muted); margin: 0 0 28px; }
+  .sub b { color: var(--ink); font-weight: 500; }
+  .sub a { color: var(--accent); }
+
+  .combs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .comb { background: var(--bg-2); border: 1px solid var(--line-soft); border-radius: 8px; padding: 16px; }
+  .comb:hover { border-color: var(--line); }
+  .comb.warn { border-color: rgba(233,162,59,.45); }
+  .comb h3 { margin: 0; font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .comb h3 small { margin-left: auto; font-weight: 400; font-size: 11px; color: var(--accent); text-transform: uppercase; letter-spacing: .08em; }
+  .comb .os { font-size: 12px; color: var(--faint); margin: 2px 0 14px; }
+  .m { display: grid; grid-template-columns: 52px 1fr 36px; gap: 8px; align-items: center; font-size: 12px; color: var(--muted); margin: 6px 0; }
+  .m b { font-weight: 400; text-align: right; color: var(--ink); }
+  .cells { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line-soft); }
+  .cells span { font-size: 11.5px; padding: 1px 7px; border-radius: 4px; background: var(--bg); color: var(--muted); }
+  .cells span.off { color: var(--faint); text-decoration: line-through; text-decoration-color: rgba(255,255,255,.2); }
+
+  .row2 { display: grid; grid-template-columns: 1.3fr 1fr; gap: 28px; margin-top: 36px; }
+  h2 { font-size: 13px; font-weight: 600; color: var(--muted); margin: 0 0 10px; }
+  .list div { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line-soft); font-size: 13.5px; }
+  .list div time { margin-left: auto; color: var(--faint); font-size: 12px; font-family: var(--mono); }
+  .hint { margin-top: 26px; padding: 14px 16px; border: 1px dashed var(--line); border-radius: 8px; color: var(--muted); font-size: 13px; display: flex; gap: 10px; align-items: center; }
+
+  /* command palette */
+  .scrim { position: fixed; inset: 0; background: rgba(12,16,24,.55); display: none; align-items: flex-start; justify-content: center; padding-top: 12vh; z-index: 50; }
+  .scrim.open { display: flex; }
+  .pal { width: 600px; max-width: calc(100% - 32px); background: var(--bg-2); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 20px 60px rgba(0,0,0,.45); overflow: hidden; }
+  .pal input { width: 100%; height: 48px; border: 0; border-bottom: 1px solid var(--line-soft); background: transparent; color: var(--ink); padding: 0 18px; font: 15px var(--sans); outline: none; }
+  .pal h6 { margin: 10px 18px 4px; font-size: 11px; color: var(--faint); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
+  .pal a { display: flex; align-items: center; justify-content: space-between; padding: 8px 18px; font-size: 13.5px; }
+  .pal a span:last-child { color: var(--faint); font-size: 12px; }
+  .pal a.sel, .pal a:hover { background: var(--bg-3); }
+  .pal footer { display: flex; gap: 14px; padding: 8px 18px; border-top: 1px solid var(--line-soft); font-size: 11.5px; color: var(--faint); }
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="brand"><b></b>APIARY</div>
+  <nav class="tabs">
+    <a class="active" href="#">Overview</a>
+    <a href="#">Cells</a>
+    <a href="#">Combs</a>
+    <a href="#">Network</a>
+    <a href="#">Storage</a>
+    <a href="#">Colony</a>
+  </nav>
+  <div class="find" id="find">Search or run a command <kbd>/</kbd></div>
+  <div class="me">GB</div>
+</div>
+
+<main>
+  <div class="headline"><h1>skyview</h1><span class="chip ok"><i class="dot ok"></i>Healthy</span></div>
+  <p class="sub"><b>4</b> combs reachable · <b>21</b> of 23 cells running · leader <b>brood</b> · <a href="#">3 warnings</a></p>
+
+  <div class="combs">
+    <article class="comb">
+      <h3><i class="dot ok"></i>brood <small>Leader</small></h3>
+      <div class="os">FreeBSD 15.0-RELEASE · up 41d</div>
+      <div class="m">CPU<div class="meter"><i style="width:34%"></i></div><b class="num">34%</b></div>
+      <div class="m">Memory<div class="meter"><i style="width:58%"></i></div><b class="num">58%</b></div>
+      <div class="m">ZFS<div class="meter"><i style="width:52%"></i></div><b class="num">52%</b></div>
+      <div class="cells"><span>web-01</span><span>web-02</span><span>db-01</span><span>dns</span><span>proxy</span><span>git</span><span>monitor</span></div>
+    </article>
+    <article class="comb">
+      <h3><i class="dot ok"></i>apiarium</h3>
+      <div class="os">FreeBSD 15.0-RELEASE · up 41d</div>
+      <div class="m">CPU<div class="meter"><i style="width:22%"></i></div><b class="num">22%</b></div>
+      <div class="m">Memory<div class="meter"><i style="width:47%"></i></div><b class="num">47%</b></div>
+      <div class="m">ZFS<div class="meter"><i style="width:61%"></i></div><b class="num">61%</b></div>
+      <div class="cells"><span>ci-runner-01</span><span>ci-runner-02</span><span>pkg-builder</span><span>mail</span><span>ldap</span><span>backup</span></div>
+    </article>
+    <article class="comb warn">
+      <h3><i class="dot warn"></i>nectar</h3>
+      <div class="os">FreeBSD 15.0-RELEASE · up 12d</div>
+      <div class="m">CPU<div class="meter"><i style="width:61%"></i></div><b class="num">61%</b></div>
+      <div class="m">Memory<div class="meter"><i class="warn" style="width:86%"></i></div><b class="num" style="color:var(--warn)">86%</b></div>
+      <div class="m">ZFS<div class="meter"><i style="width:70%"></i></div><b class="num">70%</b></div>
+      <div class="cells"><span>win-test</span><span>freebsd-head</span><span>linux-ci</span><span class="off">build-old</span><span>wiki</span><span>chat</span></div>
+    </article>
+    <article class="comb">
+      <h3><i class="dot ok"></i>propolis</h3>
+      <div class="os">FreeBSD 15.0-RELEASE · up 3d</div>
+      <div class="m">CPU<div class="meter"><i style="width:18%"></i></div><b class="num">18%</b></div>
+      <div class="m">Memory<div class="meter"><i style="width:39%"></i></div><b class="num">39%</b></div>
+      <div class="m">ZFS<div class="meter"><i style="width:58%"></i></div><b class="num">58%</b></div>
+      <div class="cells"><span>grafana</span><span>s3</span><span>staging-web</span><span class="off">sandbox</span></div>
+    </article>
+  </div>
+
+  <div class="row2">
+    <div>
+      <h2>Warnings</h2>
+      <div class="list">
+        <div><i class="dot stale"></i>db-01 replica on propolis is 4m behind<time>22:41</time></div>
+        <div><i class="dot warn"></i>nectar memory above 85%<time>22:10</time></div>
+        <div><i class="dot warn"></i>managerd certificate expires in 18 days<time>08:00</time></div>
+      </div>
+    </div>
+    <div>
+      <h2>Recent activity</h2>
+      <div class="list">
+        <div>Snapshot web-01<time>23:12</time></div>
+        <div>Migrated ci-runner-02 to apiarium<time>22:58</time></div>
+        <div>Join request from royal<time>21:05</time></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hint"><kbd>/</kbd> Every action in Apiary is one search away. Try typing <b>migrate</b> or a cell name.</div>
+</main>
+
+<div class="scrim" id="scrim">
+  <div class="pal" role="dialog" aria-label="Command palette">
+    <input id="q" placeholder="Type a command, cell, or comb" autocomplete="off">
+    <h6>Actions</h6>
+    <a class="sel" href="#"><span>Create virtual machine</span><span>c v</span></a>
+    <a href="#"><span>Create jail</span><span>c j</span></a>
+    <a href="#"><span>Migrate cell to another comb</span><span></span></a>
+    <a href="#"><span>Open console</span><span></span></a>
+    <a href="#"><span>Snapshot cell</span><span></span></a>
+    <a href="#"><span>Upload ISO image</span><span></span></a>
+    <h6>Go to</h6>
+    <a href="#"><span>web-01</span><span>VM on brood</span></a>
+    <a href="#"><span>nectar</span><span>Comb</span></a>
+    <footer><span><kbd>&uarr;</kbd> <kbd>&darr;</kbd> move</span><span><kbd>Enter</kbd> run</span><span><kbd>Esc</kbd> close</span></footer>
+  </div>
+</div>
+
+<nav class="wf-pill"><a href="index.html">All</a><a data-dir="prev" href="01-ledger.html">&larr;</a><span>2 / 7 Palette</span><a data-dir="next" href="03-honeycomb.html">&rarr;</a></nav>
+<script src="wf-nav.js"></script>
+<script>
+  var scrim = document.getElementById('scrim'), q = document.getElementById('q');
+  function open() { scrim.classList.add('open'); q.value = ''; q.focus(); }
+  function close() { scrim.classList.remove('open'); }
+  document.getElementById('find').addEventListener('click', open);
+  scrim.addEventListener('click', function (e) { if (e.target === scrim) close(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === '/' && !scrim.classList.contains('open')) { e.preventDefault(); open(); }
+    else if (e.key === 'Escape') close();
+  });
+</script>
+</body>
+</html>

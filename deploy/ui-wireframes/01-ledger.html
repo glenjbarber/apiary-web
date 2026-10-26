@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apiary - 01 Ledger</title>
+<link rel="stylesheet" href="wf-base.css">
+<style>
+  body { display: grid; grid-template-columns: 224px 1fr; min-height: 100vh; }
+  aside {
+    background: #212731; border-right: 1px solid var(--line-soft);
+    padding: 16px 12px; display: flex; flex-direction: column; gap: 18px;
+    position: sticky; top: 0; height: 100vh; overflow: auto;
+  }
+  .brand { display: flex; align-items: center; gap: 8px; padding: 2px 8px; font-weight: 700; letter-spacing: .14em; font-size: 13px; }
+  .brand b { width: 14px; height: 14px; background: var(--accent); clip-path: polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%); }
+  .search {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 30px; padding: 0 10px; border: 1px solid var(--line); border-radius: var(--radius);
+    color: var(--faint); font-size: 13px; background: var(--bg);
+  }
+  .nav h6 { margin: 0 0 4px; padding: 0 8px; font-size: 11px; font-weight: 600; color: var(--faint); text-transform: uppercase; letter-spacing: .08em; }
+  .nav a { display: flex; align-items: center; justify-content: space-between; padding: 5px 8px; border-radius: 5px; color: var(--muted); font-size: 13.5px; }
+  .nav a:hover { background: var(--bg-2); color: var(--ink); }
+  .nav a.active { background: var(--bg-3); color: var(--ink); box-shadow: inset 2px 0 0 var(--accent); }
+  .nav a small { color: var(--faint); font-size: 12px; }
+  .nav a .dot { margin-left: 6px; }
+  .who { margin-top: auto; padding: 8px; font-size: 12px; color: var(--faint); border-top: 1px solid var(--line-soft); }
+
+  main { padding: 28px 36px 60px; max-width: 1180px; }
+  header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
+  header h1 { margin: 0; font-size: 20px; font-weight: 600; }
+  header p { margin: 4px 0 0; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+
+  .stats { display: grid; grid-template-columns: repeat(5, 1fr); border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--bg-2); }
+  .stat { padding: 14px 16px; border-right: 1px solid var(--line-soft); }
+  .stat:last-child { border-right: 0; }
+  .stat label { display: block; font-size: 12px; color: var(--faint); margin-bottom: 6px; }
+  .stat strong { font-size: 18px; font-weight: 600; }
+  .stat span { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  section { margin-top: 28px; }
+  section > h2 { font-size: 13px; font-weight: 600; color: var(--muted); margin: 0 0 10px; display: flex; justify-content: space-between; }
+  section > h2 a { color: var(--faint); font-weight: 400; }
+  section > h2 a:hover { color: var(--ink); }
+
+  .attn { border: 1px solid var(--line-soft); border-radius: var(--radius); }
+  .attn div { display: grid; grid-template-columns: 16px 1fr auto; gap: 12px; align-items: center; padding: 10px 14px; border-top: 1px solid var(--line-soft); }
+  .attn div:first-child { border-top: 0; }
+  .attn em { font-style: normal; color: var(--faint); font-size: 12px; margin-left: 8px; }
+  .attn a { font-size: 13px; color: var(--accent); }
+
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 12px; font-weight: 500; color: var(--faint); padding: 0 12px 8px; border-bottom: 1px solid var(--line); }
+  td { padding: 11px 12px; border-bottom: 1px solid var(--line-soft); vertical-align: middle; }
+  tr:hover td { background: rgba(255,255,255,.02); }
+  td.name { font-weight: 600; }
+  td.name span { display: flex; align-items: center; gap: 8px; }
+  .res { display: grid; grid-template-columns: 34px 1fr; gap: 8px; align-items: center; font-size: 12px; color: var(--muted); min-width: 120px; }
+  .role { font-size: 12px; color: var(--muted); }
+  .role.leader { color: var(--accent); }
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand"><b></b>APIARY</div>
+  <div class="search">Search <kbd>/</kbd></div>
+  <nav class="nav">
+    <a class="active" href="#">Overview</a>
+  </nav>
+  <nav class="nav">
+    <h6>Resources</h6>
+    <a href="#">Virtual machines <small>12</small></a>
+    <a href="#">Jails <small>11</small></a>
+    <a href="#">Images <small>9</small></a>
+  </nav>
+  <nav class="nav">
+    <h6>Topology</h6>
+    <a href="#">Networks <small>3</small></a>
+    <a href="#">Network map</a>
+    <a href="#">Path trace</a>
+  </nav>
+  <nav class="nav">
+    <h6>Colony</h6>
+    <a href="#">Replication <span class="dot warn"></span></a>
+    <a href="#">Consensus</a>
+    <a href="#">Updates</a>
+    <a href="#">Simulations</a>
+    <a href="#">Recovery handbook</a>
+    <a href="#">Certificates <span class="dot warn"></span></a>
+  </nav>
+  <nav class="nav">
+    <h6>Combs</h6>
+    <a href="#">brood <span class="dot ok"></span></a>
+    <a href="#">apiarium <span class="dot ok"></span></a>
+    <a href="#">nectar <span class="dot warn"></span></a>
+    <a href="#">propolis <span class="dot ok"></span></a>
+  </nav>
+  <div class="who">gjb · Admin · <a href="#">Settings</a></div>
+</aside>
+
+<main>
+  <header>
+    <div>
+      <h1>Colony skyview</h1>
+      <p><span class="dot ok"></span>Healthy, with 3 warnings and 1 pending join request</p>
+    </div>
+    <div style="display:flex;gap:8px">
+      <a class="btn" href="#">Add comb</a>
+      <a class="btn primary" href="#">Create cell</a>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><label>Combs</label><strong class="num">4 / 4</strong><span>reachable</span></div>
+    <div class="stat"><label>Cells</label><strong class="num">21 / 23</strong><span>running, 2 stopped</span></div>
+    <div class="stat"><label>Consensus</label><strong>brood</strong><span>leader, term 412</span></div>
+    <div class="stat"><label>Replication</label><strong class="num">11 / 12</strong><span>in sync, 1 stale</span></div>
+    <div class="stat"><label>Storage</label><strong class="num">61%</strong><span>7.2 of 11.8 TiB</span></div>
+  </div>
+
+  <section>
+    <h2>Needs attention <a href="#">History</a></h2>
+    <div class="attn">
+      <div><span class="dot stale"></span><span>Replica of <b>db-01</b> on propolis is stale<em>last sync 4m 12s ago</em></span><a href="#">Resync</a></div>
+      <div><span class="dot warn"></span><span>Comb <b>nectar</b> memory at 86%<em>6 cells, 54.9 of 64 GiB</em></span><a href="#">Rebalance</a></div>
+      <div><span class="dot warn"></span><span>Certificate for <b>managerd</b> expires in 18 days</span><a href="#">Renew</a></div>
+      <div><span class="dot na"></span><span>Comb <b>royal</b> requested to join<em>from 10.0.10.25</em></span><a href="#">Review</a></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Combs <a href="#">Open network map</a></h2>
+    <table>
+      <thead><tr><th>Comb</th><th>Role</th><th>CPU</th><th>Memory</th><th>ZFS pool</th><th>Cells</th><th>Uptime</th></tr></thead>
+      <tbody>
+        <tr><td class="name"><span><i class="dot ok"></i>brood</span></td><td class="role leader">Leader</td>
+          <td><div class="res"><span class="num">34%</span><div class="meter"><i style="width:34%"></i></div></div></td>
+          <td><div class="res"><span class="num">58%</span><div class="meter"><i style="width:58%"></i></div></div></td>
+          <td><div class="res"><span class="num">52%</span><div class="meter"><i style="width:52%"></i></div></div></td>
+          <td class="num">7</td><td class="num muted">41d</td></tr>
+        <tr><td class="name"><span><i class="dot ok"></i>apiarium</span></td><td class="role">Follower</td>
+          <td><div class="res"><span class="num">22%</span><div class="meter"><i style="width:22%"></i></div></div></td>
+          <td><div class="res"><span class="num">47%</span><div class="meter"><i style="width:47%"></i></div></div></td>
+          <td><div class="res"><span class="num">61%</span><div class="meter"><i style="width:61%"></i></div></div></td>
+          <td class="num">6</td><td class="num muted">41d</td></tr>
+        <tr><td class="name"><span><i class="dot warn"></i>nectar</span></td><td class="role">Follower</td>
+          <td><div class="res"><span class="num">61%</span><div class="meter"><i style="width:61%"></i></div></div></td>
+          <td><div class="res"><span class="num" style="color:var(--warn)">86%</span><div class="meter"><i class="warn" style="width:86%"></i></div></div></td>
+          <td><div class="res"><span class="num">70%</span><div class="meter"><i style="width:70%"></i></div></div></td>
+          <td class="num">6</td><td class="num muted">12d</td></tr>
+        <tr><td class="name"><span><i class="dot ok"></i>propolis</span></td><td class="role">Follower</td>
+          <td><div class="res"><span class="num">18%</span><div class="meter"><i style="width:18%"></i></div></div></td>
+          <td><div class="res"><span class="num">39%</span><div class="meter"><i style="width:39%"></i></div></div></td>
+          <td><div class="res"><span class="num">58%</span><div class="meter"><i style="width:58%"></i></div></div></td>
+          <td class="num">4</td><td class="num muted">3d</td></tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+
+<nav class="wf-pill"><a href="index.html">All</a><a data-dir="prev" href="07-matrix.html">&larr;</a><span>1 / 7 Ledger</span><a data-dir="next" href="02-palette.html">&rarr;</a></nav>
+<script src="wf-nav.js"></script>
+</body>
+</html>

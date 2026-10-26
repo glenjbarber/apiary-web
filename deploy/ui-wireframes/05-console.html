@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apiary - 05 Console</title>
+<link rel="stylesheet" href="wf-base.css">
+<style>
+  :root { --bg: #2a2d33; --bg-2: #31353c; --bg-3: #3a3f47; --line: #444a53; --line-soft: #393e46; --ink: #e3e5e8; --muted: #a0a6af; --faint: #737a85; }
+  body { font: 13px/1.6 var(--mono); padding-bottom: 46px; }
+  .bar { display: flex; flex-wrap: wrap; gap: 0; border-bottom: 1px solid var(--line-soft); background: #26292e; }
+  .bar span { padding: 7px 14px; border-right: 1px solid var(--line-soft); color: var(--muted); white-space: nowrap; }
+  .bar span b { color: var(--ink); font-weight: 600; }
+  .bar .brand { color: var(--accent); font-weight: 700; letter-spacing: .12em; }
+  .bar .w { color: var(--warn); }
+  .grid { display: grid; grid-template-columns: 200px 1fr; }
+  .grid > nav { padding: 18px 16px; border-right: 1px solid var(--line-soft); min-height: calc(100vh - 82px); }
+  .grid > nav a { display: flex; gap: 10px; padding: 2px 6px; color: var(--muted); border-radius: 3px; }
+  .grid > nav a kbd { border: 0; background: none; padding: 0; color: var(--faint); font-size: 12px; width: 26px; }
+  .grid > nav a:hover { color: var(--ink); background: var(--bg-2); }
+  .grid > nav a.active { color: var(--ink); background: var(--bg-3); }
+  .grid > nav h6 { margin: 14px 0 4px 6px; color: var(--faint); font-size: 11px; font-weight: 400; }
+  main { padding: 18px 26px; max-width: 1100px; }
+  h2 { font-size: 13px; font-weight: 600; margin: 22px 0 6px; color: var(--ink); }
+  h2:first-child { margin-top: 0; }
+  h2 small { color: var(--faint); font-weight: 400; margin-left: 10px; }
+  table { border-collapse: collapse; width: 100%; }
+  th { text-align: left; color: var(--faint); font-weight: 400; padding: 2px 14px 2px 0; border-bottom: 1px solid var(--line-soft); }
+  td { padding: 3px 14px 3px 0; white-space: nowrap; }
+  tr:hover td { background: rgba(255,255,255,.025); }
+  .ok { color: var(--ok); } .warn { color: var(--warn); } .crit { color: var(--crit); } .na { color: var(--na); } .stale { color: var(--stale); }
+  .bars { letter-spacing: -1px; color: var(--muted); }
+  .bars i { font-style: normal; color: var(--line); }
+  .bars.w { color: var(--warn); }
+  .attn div { padding: 2px 0; }
+  .attn a { color: var(--accent); margin-left: 8px; }
+  .attn a:hover { text-decoration: underline; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 22px; }
+  .cmd { position: fixed; left: 0; right: 0; bottom: 0; height: 40px; display: flex; align-items: center; gap: 10px; padding: 0 16px; border-top: 1px solid var(--line); background: #24272c; }
+  .cmd span { color: var(--accent); }
+  .cmd input { flex: 1; background: transparent; border: 0; outline: none; color: var(--ink); font: 13px var(--mono); }
+  .cmd small { color: var(--faint); }
+  .wf-pill { bottom: 52px; }
+</style>
+</head>
+<body>
+<div class="bar">
+  <span class="brand">APIARY</span>
+  <span>colony <b>skyview</b></span>
+  <span class="ok">healthy</span>
+  <span>combs <b>4/4</b></span>
+  <span>cells <b>21/23</b></span>
+  <span>raft <b>brood</b> t412</span>
+  <span>hast <b>11/12</b></span>
+  <span class="w">3 warn</span>
+  <span>gjb@admin</span>
+</div>
+<div class="grid">
+  <nav>
+    <a class="active" href="#"><kbd>g o</kbd>overview</a>
+    <a href="#"><kbd>g c</kbd>cells</a>
+    <a href="#"><kbd>g b</kbd>combs</a>
+    <a href="#"><kbd>g n</kbd>networks</a>
+    <a href="#"><kbd>g s</kbd>storage</a>
+    <a href="#"><kbd>g i</kbd>images</a>
+    <h6>colony</h6>
+    <a href="#"><kbd>g r</kbd>raft</a>
+    <a href="#"><kbd>g h</kbd>hast</a>
+    <a href="#"><kbd>g u</kbd>updates</a>
+    <a href="#"><kbd>g x</kbd>simulate</a>
+    <a href="#"><kbd>g e</kbd>evidence</a>
+    <h6>do</h6>
+    <a href="#"><kbd>n</kbd>new cell</a>
+    <a href="#"><kbd>:</kbd>command</a>
+    <a href="#"><kbd>?</kbd>all keys</a>
+  </nav>
+  <main>
+    <h2>attention <small>4</small></h2>
+    <div class="attn">
+      <div><span class="stale">[stale]</span> hast db-01 secondary on propolis, last sync 4m12s <a href="#">resync</a></div>
+      <div><span class="warn">[warn] </span> comb nectar mem 86% (54.9/64.0 GiB) <a href="#">rebalance</a></div>
+      <div><span class="warn">[warn] </span> cert managerd expires in 18d <a href="#">renew</a></div>
+      <div><span class="na">[join] </span> comb royal 10.0.10.25 requests membership <a href="#">review</a></div>
+    </div>
+
+    <h2>combs</h2>
+    <table>
+      <tr><th>comb</th><th>state</th><th>raft</th><th>cpu</th><th>mem</th><th>zfs</th><th>cells</th><th>up</th></tr>
+      <tr><td>brood</td><td class="ok">ok</td><td style="color:var(--accent)">leader</td><td class="bars">&#9608;&#9608;&#9608;<i>&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;</i> 34</td><td class="bars">&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;<i>&#9608;&#9608;&#9608;&#9608;</i> 58</td><td class="bars">&#9608;&#9608;&#9608;&#9608;&#9608;<i>&#9608;&#9608;&#9608;&#9608;&#9608;</i> 52</td><td>7</td><td>41d</td></tr>
+      <tr><td>apiarium</td><td class="ok">ok</td><td>follower</td><td class="bars">&#9608;&#9608;<i>&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;</i> 22</td><td class="bars">&#9608;&#9608;&#9608;&#9608;&#9608;<i>&#9608;&#9608;&#9608;&#9608;&#9608;</i> 47</td><td class="bars">&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;<i>&#9608;&#9608;&#9608;&#9608;</i> 61</td><td>6</td><td>41d</td></tr>
+      <tr><td>nectar</td><td class="warn">warn</td><td>follower</td><td class="bars">&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;<i>&#9608;&#9608;&#9608;&#9608;</i> 61</td><td class="bars w">&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;<i>&#9608;</i> 86</td><td class="bars">&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;<i>&#9608;&#9608;&#9608;</i> 70</td><td>6</td><td>12d</td></tr>
+      <tr><td>propolis</td><td class="ok">ok</td><td>follower</td><td class="bars">&#9608;&#9608;<i>&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;</i> 18</td><td class="bars">&#9608;&#9608;&#9608;&#9608;<i>&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;</i> 39</td><td class="bars">&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;<i>&#9608;&#9608;&#9608;&#9608;</i> 58</td><td>4</td><td>3d</td></tr>
+    </table>
+
+    <div class="two">
+      <div>
+        <h2>subsystems</h2>
+        <table>
+          <tr><td>raft</td><td class="ok">ok</td><td class="muted">leader brood, term 412, commit 88214</td></tr>
+          <tr><td>hast</td><td class="stale">stale</td><td class="muted">11/12 in sync</td></tr>
+          <tr><td>zfs</td><td class="ok">ok</td><td class="muted">7.2/11.8 TiB, 0 errors</td></tr>
+          <tr><td>pf</td><td class="ok">ok</td><td class="muted">rulesets match on 4/4</td></tr>
+          <tr><td>net</td><td class="ok">ok</td><td class="muted">lan vlan10, dmz vlan20, storage vlan30</td></tr>
+          <tr><td>ntp</td><td class="ok">ok</td><td class="muted">max skew 4ms</td></tr>
+          <tr><td>tls</td><td class="warn">soon</td><td class="muted">expires 2026-11-13</td></tr>
+        </table>
+      </div>
+      <div>
+        <h2>log <small>tail</small></h2>
+        <table>
+          <tr><td class="faint">23:12</td><td>gjb snapshot web-01@pre-upgrade</td></tr>
+          <tr><td class="faint">22:58</td><td>migrate ci-runner-02 brood &rarr; apiarium ok</td></tr>
+          <tr><td class="faint">22:41</td><td class="stale">hast db-01 secondary stale</td></tr>
+          <tr><td class="faint">22:10</td><td class="warn">nectar mem crossed 85%</td></tr>
+          <tr><td class="faint">21:05</td><td>join request royal</td></tr>
+          <tr><td class="faint">19:30</td><td>create jail chat on nectar ok</td></tr>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+<div class="cmd"><span>:</span><input id="cmd" placeholder="migrate web-01 --to propolis    (Tab completes, ? lists commands)"><small>Esc to leave</small></div>
+
+<nav class="wf-pill"><a href="index.html">All</a><a data-dir="prev" href="04-inbox.html">&larr;</a><span>5 / 7 Console</span><a data-dir="next" href="06-tasks.html">&rarr;</a></nav>
+<script src="wf-nav.js"></script>
+<script>
+  var c = document.getElementById('cmd');
+  document.addEventListener('keydown', function (e) {
+    if (e.key === ':' && document.activeElement !== c) { e.preventDefault(); c.focus(); }
+    if (e.key === 'Escape') c.blur();
+  });
+</script>
+</body>
+</html>

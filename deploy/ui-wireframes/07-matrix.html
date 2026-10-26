@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apiary - 07 Matrix</title>
+<link rel="stylesheet" href="wf-base.css">
+<style>
+  :root { --bg: #272d38; --bg-2: #2e3542; --bg-3: #374050; }
+  body { display: grid; grid-template-columns: 72px 1fr; min-height: 100vh; }
+  .rail { background: #20252e; border-right: 1px solid var(--line-soft); display: flex; flex-direction: column; align-items: center; padding: 14px 0; gap: 4px; position: sticky; top: 0; height: 100vh; }
+  .rail .logo { width: 22px; height: 22px; background: var(--accent); clip-path: polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%); margin-bottom: 16px; }
+  .rail a { width: 60px; padding: 8px 0 6px; border-radius: 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--faint); font-size: 10.5px; }
+  .rail a svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .rail a:hover { color: var(--ink); background: var(--bg-2); }
+  .rail a.active { color: var(--ink); background: var(--bg-3); }
+  .rail a.active svg { stroke: var(--accent); }
+  .rail .sp { flex: 1; }
+
+  main { padding: 22px 34px 60px; max-width: 1240px; }
+  header { display: flex; align-items: center; gap: 16px; }
+  header h1 { margin: 0; font-size: 18px; font-weight: 600; }
+  header .find { margin-left: auto; width: 280px; height: 30px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; border: 1px solid var(--line); border-radius: var(--radius); color: var(--faint); font-size: 13px; }
+  .tabs { display: flex; gap: 22px; border-bottom: 1px solid var(--line-soft); margin: 14px 0 22px; }
+  .tabs a { padding: 8px 0; color: var(--muted); font-size: 13.5px; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .tabs a.active { color: var(--ink); border-bottom-color: var(--accent); }
+  .tabs a:hover { color: var(--ink); }
+
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
+  .tile { background: var(--bg-2); border: 1px solid var(--line-soft); border-radius: 8px; padding: 14px 16px 10px; }
+  .tile label { font-size: 12px; color: var(--faint); display: flex; align-items: center; gap: 6px; }
+  .tile strong { display: block; font-size: 22px; font-weight: 600; margin-top: 4px; }
+  .tile strong small { font-size: 13px; color: var(--muted); font-weight: 400; }
+  .tile svg { display: block; width: 100%; height: 30px; margin-top: 6px; }
+  .tile polyline { fill: none; stroke: var(--muted); stroke-width: 1.5; }
+  .tile.w polyline { stroke: var(--warn); }
+
+  h2 { font-size: 13px; font-weight: 600; color: var(--muted); margin: 0 0 10px; display: flex; justify-content: space-between; align-items: baseline; }
+  h2 span { font-weight: 400; color: var(--faint); font-size: 12px; }
+  .matrix { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--bg-2); border: 1px solid var(--line-soft); border-radius: 8px; overflow: hidden; }
+  .matrix th { font-size: 11.5px; font-weight: 500; color: var(--faint); padding: 10px 6px; text-align: center; border-bottom: 1px solid var(--line-soft); }
+  .matrix th:first-child { text-align: left; padding-left: 16px; }
+  .matrix td { text-align: center; padding: 11px 6px; border-bottom: 1px solid var(--line-soft); }
+  .matrix tr:last-child td { border-bottom: 0; }
+  .matrix td:first-child { text-align: left; padding-left: 16px; font-weight: 600; white-space: nowrap; }
+  .matrix td:first-child small { font-weight: 400; color: var(--accent); font-size: 11px; margin-left: 6px; }
+  .matrix td .dot { width: 10px; height: 10px; cursor: help; }
+  .matrix tbody tr:hover td { background: rgba(255,255,255,.025); }
+  .matrix td.act { text-align: right; padding-right: 16px; }
+  .matrix td.act a { color: var(--faint); font-size: 12px; }
+  .matrix td.act a:hover { color: var(--ink); }
+  .legend { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 10px; font-size: 12px; color: var(--muted); }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+  .below { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 30px; }
+  .rows div { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line-soft); font-size: 13.5px; }
+  .rows div a { margin-left: auto; color: var(--accent); font-size: 13px; }
+  .rows div time { margin-left: auto; color: var(--faint); font-family: var(--mono); font-size: 12px; }
+</style>
+</head>
+<body>
+<nav class="rail">
+  <div class="logo"></div>
+  <a class="active" href="#"><svg viewBox="0 0 24 24"><path d="M12 3l7.8 4.5v9L12 21l-7.8-4.5v-9z"/></svg>Overview</a>
+  <a href="#"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></svg>Cells</a>
+  <a href="#"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="1"/><rect x="4" y="14" width="16" height="6" rx="1"/><path d="M8 7h.01M8 17h.01"/></svg>Combs</a>
+  <a href="#"><svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="2.2"/><circle cx="18" cy="6" r="2.2"/><circle cx="18" cy="18" r="2.2"/><path d="M8 11l8-4M8 13l8 4"/></svg>Network</a>
+  <a href="#"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7" ry="2.5"/><path d="M5 6v12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V6M5 12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5"/></svg>Storage</a>
+  <a href="#"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2"/></svg>Images</a>
+  <a href="#"><svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="2.5"/><circle cx="6.5" cy="16" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/><path d="M10.8 9.2l-3 4.6M13.2 9.2l3 4.6M9 16h6"/></svg>Colony</a>
+  <div class="sp"></div>
+  <a href="#"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>Settings</a>
+</nav>
+
+<main>
+  <header>
+    <h1>skyview</h1><span class="chip ok"><i class="dot ok"></i>Healthy</span><span class="chip warn">3 warnings</span>
+    <div class="find">Search or run <kbd>/</kbd></div>
+    <a class="btn primary" href="#">Create cell</a>
+  </header>
+  <nav class="tabs"><a class="active" href="#">Health</a><a href="#">Capacity</a><a href="#">Activity</a><a href="#">Evidence</a></nav>
+
+  <div class="tiles">
+    <div class="tile"><label><i class="dot ok"></i>Combs reachable</label><strong class="num">4<small> / 4</small></strong><svg viewBox="0 0 100 30" preserveAspectRatio="none"><polyline points="0,8 20,8 40,8 60,8 80,8 100,8"/></svg></div>
+    <div class="tile"><label><i class="dot ok"></i>Cells running</label><strong class="num">21<small> / 23</small></strong><svg viewBox="0 0 100 30" preserveAspectRatio="none"><polyline points="0,14 15,12 30,12 45,10 60,12 75,10 100,10"/></svg></div>
+    <div class="tile"><label><i class="dot ok"></i>Consensus</label><strong>brood<small> term 412</small></strong><svg viewBox="0 0 100 30" preserveAspectRatio="none"><polyline points="0,20 20,22 40,19 60,21 80,20 100,20"/></svg></div>
+    <div class="tile w"><label><i class="dot stale"></i>Replicas in sync</label><strong class="num">11<small> / 12</small></strong><svg viewBox="0 0 100 30" preserveAspectRatio="none"><polyline points="0,6 20,6 40,6 60,6 80,6 88,18 100,18"/></svg></div>
+  </div>
+
+  <h2>Health matrix <span>Each dot is one check on one comb. Hover for detail.</span></h2>
+  <table class="matrix">
+    <thead><tr><th>Comb</th><th>Reachable</th><th>Raft</th><th>HAST</th><th>ZFS</th><th>PF</th><th>Network</th><th>Memory</th><th>TLS</th><th>Time</th><th>Reconciler</th><th></th></tr></thead>
+    <tbody id="mx"></tbody>
+  </table>
+  <div class="legend">
+    <span><i class="dot ok"></i>OK</span><span><i class="dot warn"></i>Warning</span><span><i class="dot crit"></i>Critical</span>
+    <span><i class="dot stale"></i>Stale</span><span><i class="dot unk"></i>Unknown</span><span><i class="dot na"></i>Not applicable</span><span><i class="dot contra"></i>Contradictory</span>
+  </div>
+
+  <div class="below">
+    <section>
+      <h2>Fix next</h2>
+      <div class="rows">
+        <div><i class="dot stale"></i>db-01 replica on propolis is 4m behind<a href="#">Resync</a></div>
+        <div><i class="dot warn"></i>nectar memory at 86%<a href="#">Rebalance</a></div>
+        <div><i class="dot warn"></i>managerd certificate expires in 18 days<a href="#">Renew</a></div>
+        <div><i class="dot na"></i>royal requested to join<a href="#">Review</a></div>
+      </div>
+    </section>
+    <section>
+      <h2>Recent activity</h2>
+      <div class="rows">
+        <div>Snapshot of web-01<time>23:12</time></div>
+        <div>Moved ci-runner-02 to apiarium<time>22:58</time></div>
+        <div>db-01 replica fell behind<time>22:41</time></div>
+        <div>Created jail chat on nectar<time>19:30</time></div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<nav class="wf-pill"><a href="index.html">All</a><a data-dir="prev" href="06-tasks.html">&larr;</a><span>7 / 7 Matrix</span><a data-dir="next" href="01-ledger.html">&rarr;</a></nav>
+<script src="wf-nav.js"></script>
+<script>
+var cols = ['Reachable','Raft','HAST','ZFS','PF','Network','Memory','TLS','Time','Reconciler'];
+var rows = [
+  ['brood', 'Leader', ['ok','ok','ok','ok','ok','ok','ok','warn','ok','ok'], {7:'Certificate expires in 18 days'}],
+  ['apiarium', '', ['ok','ok','ok','ok','ok','ok','ok','warn','ok','ok'], {7:'Certificate expires in 18 days'}],
+  ['nectar', '', ['ok','ok','ok','ok','ok','ok','warn','warn','ok','ok'], {6:'86% used (54.9 of 64 GiB)', 7:'Certificate expires in 18 days'}],
+  ['propolis', '', ['ok','ok','stale','ok','ok','ok','ok','warn','ok','na'], {2:'db-01 secondary last synced 4m 12s ago', 7:'Certificate expires in 18 days', 9:'No reconciler configured; check does not apply'}]
+];
+var names = { ok: 'OK', warn: 'Warning', stale: 'Stale', na: 'Not applicable', unk: 'Unknown', crit: 'Critical', contra: 'Contradictory' };
+document.getElementById('mx').innerHTML = rows.map(function (r) {
+  return '<tr><td>' + r[0] + (r[1] ? '<small>' + r[1] + '</small>' : '') + '</td>' +
+    r[2].map(function (s, i) { return '<td><i class="dot ' + s + '" title="' + r[0] + ' · ' + cols[i] + ': ' + names[s] + (r[3][i] ? ' · ' + r[3][i] : '') + '"></i></td>'; }).join('') +
+    '<td class="act"><a href="#">Open</a></td></tr>';
+}).join('');
+</script>
+</body>
+</html>
