@@ -96,6 +96,167 @@
       </p>
       <ol class="recent">
         <li>
+          <span class="when">26 Oct</span>
+          <div>
+            <h3>A new web UI that opens on Colony health</h3>
+            <p>
+              The web control plane has a new layout: an icon rail, a top bar with
+              tabs, and an overview that opens on the Colony's health. The overview
+              is one status line, a list of what needs attention, and every Comb as
+              a table, as cards, or as a health matrix, whichever the operator
+              picks; the choice is remembered. A command palette, opened with /,
+              finds cells, Combs, and pages, and lists only the actions the
+              signed-in role can take.
+            </p>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/pull/196">Blend UI (#196)</a>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/pull/197">Top bar and refresh fixes (#197)</a>
+          </div>
+        </li>
+        <li>
+          <span class="when">26 Oct</span>
+          <div>
+            <h3>Certificates prepared for a Comb before it joins</h3>
+            <p>
+              A Comb in the Colony can prepare a working certificate for a host that
+              has not joined yet. The joining Comb receives it over the join channel,
+              sealed to its own certificate, installs it atomically, and then
+              obtains its own replacement through the Cloudflare integration, which
+              is provisioned only to a Comb that was prepared for. Replacing a
+              Comb's pinned certificate is a staged transition with a bounded
+              overlap, shown on a new peer trust page. A guided apiaryctl
+              walkthrough sets up the Cloudflare and Let's Encrypt integration on
+              the first Comb.
+            </p>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/pull/187">Reservations (#187)</a>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/pull/188">Trust transition (#188)</a>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/pull/189">Join delivery (#189)</a>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/pull/190">Setup walkthrough (#190)</a>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/pull/195">Peer trust page (#195)</a>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/blob/main/docs/adr/0169-prepared-certificate-reservations.md">ADR-0169</a>
+          </div>
+        </li>
+        <li>
+          <span class="when">25 Oct</span>
+          <div>
+            <h3>HAST replication is encrypted</h3>
+            <p>
+              hastd has no encryption of its own, and it accepts a connection only
+              from the peer address it was configured with, so a TLS proxy in front
+              of it would be refused. HAST replication now runs over a WireGuard
+              link between each pair of Combs that share a resource, which keeps the
+              source address hastd checks. This closes one of the gaps noted on
+              21 Oct.
+            </p>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/pull/176">HAST transport encryption (#176)</a>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/blob/main/docs/adr/0158-hast-transport-tls.md">ADR-0158</a>
+          </div>
+        </li>
+        <li>
+          <span class="when">25 Oct</span>
+          <div>
+            <h3>Monitoring reports, and a Zabbix template</h3>
+            <p>
+              Each Comb's current observations and the Colony's verdict can be
+              polled over RPC and REST by an external monitoring system. The reports
+              are read-only and pull-only, and Apiary keeps no history of them. A
+              Zabbix 7.0 template reads the whole Colony in one request per
+              interval, discovers every Comb from that one report, and is checked
+              against its design record by the test suite.
+            </p>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/pull/184">Monitoring reports (#184)</a>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/pull/185">Zabbix template (#185)</a>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/blob/main/docs/adr/0160-native-monitoring-api.md">ADR-0160</a>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/blob/main/docs/adr/0161-zabbix-monitoring-integration.md">ADR-0161</a>
+          </div>
+        </li>
+        <li>
+          <span class="when">25 Oct</span>
+          <div>
+            <h3>A read-only MCP server for AI clients</h3>
+            <p>
+              Apiary ships an MCP server that lets AI clients read the Colony's
+              state through three read-only tools. Its tools make no assumption
+              about the model behind the client. It installs on chosen Combs as an
+              rc.d service, refuses unauthenticated requests, reads its secrets from
+              a file, and is tested against orcli's MCP client and against a real
+              deployment.
+            </p>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/pull/179">Model-agnostic tools (#179)</a>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/pull/180">Deployable on a Comb (#180)</a>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/blob/main/docs/adr/0162-apiary-mcp-server.md">ADR-0162</a>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/blob/main/docs/adr/0166-model-agnostic-mcp-tool-surface.md">ADR-0166</a>
+          </div>
+        </li>
+        <li>
+          <span class="when">25 Oct</span>
+          <div>
+            <h3>One page for both sides of a Colony join</h3>
+            <p>
+              A read-only ledger shows the joining Comb's steps beside the target's,
+              with the Comb each action happens on and the value it produces or
+              consumes. It never submits anything on the operator's behalf. Creating
+              the first API key also no longer locks a Comb out of its own web UI.
+            </p>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/pull/178">Join ledger (#178)</a>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/pull/183">First API key fix (#183)</a>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/blob/main/docs/adr/0163-guided-colony-join-flow.md">ADR-0163</a>
+          </div>
+        </li>
+        <li>
+          <span class="when">24 Oct</span>
+          <div>
+            <h3>The Colony has an identity</h3>
+            <p>
+              Two Combs bootstrapped separately used to each form their own
+              single-node cluster, and nothing could tell. The Colony now carries an
+              identity in the raft log, set once and refused a second time on every
+              replica.
+            </p>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/pull/164">Colony identity (#164)</a>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/blob/main/docs/adr/0156-colony-consensus-protocol.md">ADR-0156</a>
+          </div>
+        </li>
+        <li>
+          <span class="when">24 Oct</span>
+          <div>
+            <h3>VMs can be renamed without touching their host resources</h3>
+            <p>
+              A VM now has a logical ID, which a rename changes, and a physical
+              resource ID, which its bhyve VM, ZFS dataset, HAST resource, and PF
+              anchor keep. A rename is one atomic raft command, so nothing on the
+              host is re-provisioned or destroyed.
+            </p>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/pull/173">Atomic rename (#173)</a>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/blob/main/docs/adr/0152-atomic-vm-identity-rename.md">ADR-0152</a>
+          </div>
+        </li>
+        <li>
+          <span class="when">24 Oct</span>
+          <div>
+            <h3>The join allowlist follows Colony membership</h3>
+            <p>
+              The allowlist in front of the join RPCs is now derived from raft's
+              committed membership, so it stays current as Combs join. Before, an
+              operator had to hand-edit it on every Comb after every join.
+            </p>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/pull/174">Derived allowlist (#174)</a>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/blob/main/docs/adr/0164-peer-allowlist-membership-derivation.md">ADR-0164</a>
+          </div>
+        </li>
+        <li>
+          <span class="when">24 Oct</span>
+          <div>
+            <h3>Image comments, and a kind for prepared VM disks</h3>
+            <p>
+              Uploaded ISOs and VM images can carry a comment, shown on the images
+              page and in the VM creation pickers. Prepared FreeBSD VM disk images
+              are listed as their own kind.
+            </p>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/pull/166">Image comments (#166)</a>
+            <a class="ref" href="https://github.com/glenjbarber/apiary/pull/155">Prepared image kind (#155)</a>
+          </div>
+        </li>
+        <li>
           <span class="when">21 Oct</span>
           <div>
             <h3>Raft member traffic is now mutually authenticated TLS</h3>
