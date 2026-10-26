@@ -1,6 +1,4 @@
-/* Shared base for the Apiary web UI wireframes.
-   Tokens follow the seven-state status vocabulary in
-   apiary/docs/web-ui-redesign.md section 3.1. */
+/* Shared base for the Apiary web UI wireframes. */
 :root {
   --bg: #252b35;
   --bg-2: #2c333f;
