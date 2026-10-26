@@ -293,31 +293,25 @@
 
     <section class="panel">
       <h2>Screenshots</h2>
-      <p class="sub">Current views from a live Apiary Colony: its Command Center, automated assumption checks, operational invariants, resilience coverage map, workload wizard, and image inventory.</p>
+      <p class="sub">Current views from a live Apiary Colony: its overview, virtual machines, HAST replication, image inventory, Colony updates, and machine configuration.</p>
       <div class="shots-grid">
         <figure class="shot">
-          <button type="button" class="shot-btn" data-full="assets/screenshots/assumptions.png" data-caption="Automated Assumption Checks">
-            <img src="assets/screenshots/assumptions.png" alt="Automated Assumption Checks across a 3-node cluster, with green and attention statuses for persisted environmental observations.">
+          <button type="button" class="shot-btn" data-full="assets/screenshots/overview.png" data-caption="Overview">
+            <img src="assets/screenshots/overview.png" alt="The Apiary overview for a 3-Comb Colony: a one-line status of Combs, cells, raft leader, HAST, and ZFS, a Needs attention list, and each Comb in a table with CPU, memory, and ZFS pool use.">
           </button>
-          <figcaption>Automated Assumption Checks</figcaption>
+          <figcaption>Overview</figcaption>
         </figure>
         <figure class="shot">
-          <button type="button" class="shot-btn" data-full="assets/screenshots/coverage-map.png" data-caption="Resilience Coverage Map">
-            <img src="assets/screenshots/coverage-map.png" alt="Apiary's Resilience Coverage Map, listing simulated quorum, Comb failure, and network connectivity scenarios with their results.">
+          <button type="button" class="shot-btn" data-full="assets/screenshots/virtual-machines.png" data-caption="Virtual Machines">
+            <img src="assets/screenshots/virtual-machines.png" alt="The Virtual Machines list, showing each VM with its resources, its owning Comb and HAST replica, its state, and its network.">
           </button>
-          <figcaption>Resilience Coverage Map</figcaption>
+          <figcaption>Virtual Machines</figcaption>
         </figure>
         <figure class="shot">
-          <button type="button" class="shot-btn" data-full="assets/screenshots/command-center.png" data-caption="Command Center">
-            <img src="assets/screenshots/command-center.png" alt="Apiary's Command Center in a 3-node cluster, showing live evidence, health counts, control-plane topology, and member status.">
+          <button type="button" class="shot-btn" data-full="assets/screenshots/replication.png" data-caption="Replication">
+            <img src="assets/screenshots/replication.png" alt="The Replication page, showing a HAST-replicated VM with its primary and secondary Combs, the freshness verdict, and what each end of the pair reported.">
           </button>
-          <figcaption>Command Center</figcaption>
-        </figure>
-        <figure class="shot">
-          <button type="button" class="shot-btn" data-full="assets/screenshots/create-workload.png" data-caption="Create workload">
-            <img src="assets/screenshots/create-workload.png" alt="The Create workload wizard's Kind step, offering a virtual machine or FreeBSD jail and showing the guided step rail.">
-          </button>
-          <figcaption>Create workload</figcaption>
+          <figcaption>Replication</figcaption>
         </figure>
         <figure class="shot">
           <button type="button" class="shot-btn" data-full="assets/screenshots/images.png" data-caption="ISO and Disk Images">
@@ -326,10 +320,16 @@
           <figcaption>ISO and Disk Images</figcaption>
         </figure>
         <figure class="shot">
-          <button type="button" class="shot-btn" data-full="assets/screenshots/invariants.png" data-caption="Operational Invariants">
-            <img src="assets/screenshots/invariants.png" alt="The Operational Invariants page in dark mode, showing live quorum-tolerance and network-route-DNS results alongside structural guarantees.">
+          <button type="button" class="shot-btn" data-full="assets/screenshots/colony-updates.png" data-caption="Colony Updates">
+            <img src="assets/screenshots/colony-updates.png" alt="The Colony Updates page, listing every Comb with its role, health, FSM state agreement, and update state.">
           </button>
-          <figcaption>Operational Invariants</figcaption>
+          <figcaption>Colony Updates</figcaption>
+        </figure>
+        <figure class="shot">
+          <button type="button" class="shot-btn" data-full="assets/screenshots/machine.png" data-caption="Machine Configuration">
+            <img src="assets/screenshots/machine.png" alt="A Comb's Machine Configuration page, showing the Apiary services with their status and restart controls, and the local service endpoints.">
+          </button>
+          <figcaption>Machine Configuration</figcaption>
         </figure>
       </div>
     </section>
