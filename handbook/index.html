@@ -41,96 +41,342 @@
 
     <nav class="handbook-toc" aria-label="Handbook contents">
       <a href="#vocabulary">Vocabulary</a>
-      <a href="#install">Install a Comb</a>
-      <a href="#join">Join a Colony</a>
-      <a href="#operate">Day-to-day operation</a>
+      <a href="#first-comb">Bringing up your first Comb</a>
+      <a href="#join">Adding a Comb to a Colony</a>
+      <a href="#roles">Roles</a>
+      <a href="#workloads">Workloads</a>
+      <a href="#certificates">Certificates</a>
+      <a href="#troubleshooting">When something is wrong</a>
+      <a href="#commands">Command reference</a>
       <a href="#architecture">Architecture</a>
       <a href="#repo-layout">Repository layout</a>
       <a href="#build-test">Building and testing</a>
-      <a href="#adrs">Design records</a>
     </nav>
 
     <section class="panel handbook-group" id="operators">
       <p class="eyebrow">For operators</p>
       <h2 id="vocabulary">Vocabulary</h2>
-      <p class="sub">Apiary's own terms for the containment hierarchy it manages.</p>
+      <p class="sub">Two words the rest of this page uses a lot, plus the containment hierarchy they sit inside.</p>
       <dl class="terms">
         <div class="term">
           <dt>Colony</dt>
-          <dd>The whole cluster: every Comb, and everything running on them, held together by a single Raft consensus group.</dd>
+          <dd>One or more Combs that have agreed to be a single cluster, with one of them holding leadership at any moment. A Colony can be a single standalone Comb - that's first-class, not a degraded state.</dd>
         </div>
         <div class="term">
           <dt>Comb</dt>
-          <dd>One physical FreeBSD host. A Colony can be a single standalone Comb or several Combs joined together - both are first-class.</dd>
+          <dd>One FreeBSD host running an Apiary installation.</dd>
         </div>
         <div class="term">
           <dt>Cell</dt>
-          <dd>One VM or jail. Placed on a Comb, reconciled continuously against its desired state, visible cluster-wide.</dd>
+          <dd>One thing Apiary runs - either a VM (a bhyve virtual machine) or a jail (a FreeBSD jail). Both are addressed by an ID, unique only within its type.</dd>
         </div>
       </dl>
-    </section>
-
-    <section class="panel handbook-group">
-      <h2 id="install">Install a Comb</h2>
-      <p class="sub">From a bare FreeBSD host to an installed Comb.</p>
+      <p style="margin-top:14px">Each Comb runs four services:</p>
+      <table class="hb-table">
+        <tr><th>Service</th><th>What it does</th><th>Where you see it</th></tr>
+        <tr><td><code>apiary_raftd</code></td><td>The consensus layer. Holds the Colony's replicated state.</td><td>Never directly.</td></tr>
+        <tr><td><code>apiary_managerd</code></td><td>The authority. Every state change goes through it.</td><td>Never directly.</td></tr>
+        <tr><td><code>apiary_frontend</code></td><td>The web UI.</td><td><code>http://localhost:8080</code></td></tr>
+        <tr><td><code>apiary_restshimd</code></td><td>A REST view of the same API, for external tools.</td><td><code>http://localhost:8081</code></td></tr>
+      </table>
       <p>
-        <code>apiaryctl install</code> takes a bare FreeBSD host - configuration,
-        certificates, and identity - from a root shell and nothing else. It
-        changes nothing without <code>--apply</code>, and the useful part of
-        its report is the list of what it decided <em>not</em> to overwrite,
-        and why.
-      </p>
-      <p class="sub" style="margin-top:14px">
-        Full walkthrough:
-        <a href="https://github.com/glenjbarber/apiary/blob/main/docs/adr/0147-automated-install-and-two-way-peer-authorized-join.md">ADR-0147, Part 1</a>.
+        The web UI is where most work happens. <code>apiaryctl</code> is the
+        command line for what has to happen on a headless host - which is,
+        in practice, every Comb that is not your desk.
       </p>
     </section>
 
     <section class="panel handbook-group">
-      <h2 id="join">Join a Colony</h2>
-      <p class="sub">Adding a Comb to an existing Colony.</p>
+      <h2 id="first-comb">Bringing up your first Comb</h2>
+      <p class="sub">A FreeBSD host, root access, and the source to build from - nothing else.</p>
+      <pre><code>git clone https://github.com/glenjbarber/apiary
+cd apiary
+make setup
+make install</code></pre>
       <p>
-        A Comb can only join while the Colony's join window is open -
-        closed is the normal state, and a request against a closed
-        window is refused by name. Approval requires a live join window,
-        a matching unused entry in the root-owned authorization store,
-        and two approvals from distinct API keys presented to distinct
-        Combs, even when the Colony currently has one member. Raft member
-        traffic, and manager-to-manager peer calls, run over mutually
-        authenticated TLS by default.
+        <code>make setup</code> writes this host's configuration files and
+        generates its serving certificate and identity. Do not run it on a
+        Comb that is going to <em>join</em> an existing Colony - see below
+        for why.
       </p>
-      <p class="sub" style="margin-top:14px">
-        Full flow:
-        <a href="https://github.com/glenjbarber/apiary/blob/main/docs/adr/0147-automated-install-and-two-way-peer-authorized-join.md">ADR-0147</a>,
-        <a href="https://github.com/glenjbarber/apiary/blob/main/docs/adr/0155-colony-certificate-authority.md">ADR-0155</a>.
+      <p>Once installed, the four services live under <code>/usr/local/etc/rc.d/</code>:</p>
+      <pre><code>service apiary_raftd start
+service apiary_managerd start
+service apiary_frontend start
+service apiary_restshimd start</code></pre>
+      <p>Then open <code>http://localhost:8080</code>.</p>
+      <p>
+        <strong>The first login becomes the Admin.</strong> Apiary creates
+        no accounts on its own: until one exists, the login page says so,
+        and the first successful login on this Comb is granted the Admin
+        role. Every later account is created by an Admin, with a role of
+        their choosing. If <code>pam_service</code> is configured, those
+        accounts come from PAM instead, and the same first-login rule
+        applies to the first PAM user.
+      </p>
+      <div class="hb-note">
+        <strong>The one thing to get right:</strong> do not start
+        <code>apiary_raftd</code> on a host that is going to join an
+        existing Colony. A fresh <code>raftd</code> with no
+        <code>await_join</code> immediately forms its own independent
+        cluster, and that cluster then has to be discarded before the join
+        can work.
+      </div>
+    </section>
+
+    <section class="panel handbook-group">
+      <h2 id="join">Adding a Comb to a Colony</h2>
+      <p class="sub">A two-way, human-attested handshake - the human is not a formality, it is the security property.</p>
+      <p>
+        A join request travels from the joining Comb to the target Colony,
+        and something has to stop a stranger from asking to join. The
+        answer is that the target's Admin reads a value off one screen and
+        types it into another. That transcription is the check, and no
+        amount of automation replaces it.
+      </p>
+      <ol class="hb-steps">
+        <li>
+          <strong>Prepare the joining host.</strong> Follow
+          <a href="#first-comb">Bringing up your first Comb</a> for host
+          preparation, but <strong>stop before starting
+          <code>apiary_raftd</code></strong>.
+        </li>
+        <li>
+          <strong>The joining Comb introduces itself and prints a first code.</strong>
+          <pre><code>/usr/local/libexec/apiary/apiaryctl join-introduce --target leader.example.com:17700</code></pre>
+          This prints a 6-digit first code, this Comb's certificate
+          fingerprints, and a request ID. It submits the request to the
+          target; it does not approve anything.
+        </li>
+        <li>
+          <strong>The target's Admin approves it.</strong> On the target
+          Colony's web UI, the pending request shows the joining Comb's
+          fingerprints. The Admin compares them against what step 2
+          printed, and enters the second PIN the joining Comb is showing.
+          The join ledger (Machine page, "Open the guided join flow") shows
+          both Combs' steps side by side, and never renders the second PIN
+          itself - that value is released only to the joining Comb.
+        </li>
+        <li>
+          <strong>The joining Comb polls for approval and installs its credentials.</strong>
+          <pre><code>/usr/local/libexec/apiary/apiaryctl join-introduce \
+    --request-id jreq-XXXX --first-code 123456 \
+    --target leader.example.com:17700 --install-credentials</code></pre>
+          This installs the Colony's peer credentials on the joining Comb
+          and restarts <code>managerd</code> and <code>frontend</code> so
+          they pick them up.
+        </li>
+        <li>
+          <strong>If the joining Comb was given a prepared certificate</strong>,
+          add the reservation ID the preparing Comb printed:
+          <pre><code>/usr/local/libexec/apiary/apiaryctl join-introduce \
+    --request-id jreq-XXXX --first-code 123456 \
+    --target leader.example.com:17700 --install-credentials \
+    --reservation-id 7Qk2...Vi</code></pre>
+          The reservation ID says <em>which</em> preparation is being
+          collected - it is not what authorizes the collection (the seal
+          addressed to this Comb's own certificate is), so presenting it
+          is safe, and an ID that does not match the join is refused.
+        </li>
+      </ol>
+      <p>
+        <code>--field</code> prints one bare value and nothing else, so it
+        can go straight into a form on another machine - no labels, no
+        quoting, no trailing text to accidentally paste:
+      </p>
+      <pre><code>apiaryctl join-introduce --target leader:17700 --field first-code
+apiaryctl join-introduce --target leader:17700 --field fingerprints
+apiaryctl join-introduce --target leader:17700 --field request-id
+apiaryctl join-introduce --target leader:17700 --field second-pin</code></pre>
+    </section>
+
+    <section class="panel handbook-group">
+      <h2 id="roles">Roles</h2>
+      <p class="sub">Three roles decide what an account can do, attached per-Comb - the same person can be Admin on one Comb and Viewer on another.</p>
+      <table class="hb-table">
+        <tr><th>Role</th><th>Can do</th></tr>
+        <tr><td><code>viewer</code></td><td>Read. The monitoring API, the inventory, the health of the Colony.</td></tr>
+        <tr><td><code>operator</code></td><td>Read, and run workloads. Create and manage VMs and jails.</td></tr>
+        <tr><td><code>admin</code></td><td>Everything, plus changing the Colony itself: approving a join, managing API keys and accounts, pinning trust anchors.</td></tr>
+      </table>
+      <div class="hb-note">
+        An RPC that is not in the role map defaults to Admin, so a missing
+        entry fails closed rather than open.
+      </div>
+    </section>
+
+    <section class="panel handbook-group">
+      <h2 id="workloads">Workloads</h2>
+      <h3>VMs</h3>
+      <p>
+        A VM is a bhyve virtual machine. Creating one needs a base image -
+        an ISO or a raw disk image. Installer media (an ISO) cannot be
+        booted from as a base image; upload it as an ISO and use it as
+        install media instead. A compressed raw image
+        (<code>.raw.xz</code>, <code>.raw.gz</code>, <code>.raw.bz2</code>,
+        <code>.raw.zst</code>) can be used as a base image and Apiary
+        decompresses it while creating the disk - used as installer media
+        it is refused, since there is nothing to boot from it. Upload
+        images on the <strong>Images</strong> page, then create a VM on
+        the <strong>VMs</strong> page.
+      </p>
+      <h3>Jails</h3>
+      <p>
+        A jail is a FreeBSD jail - a process-level container sharing the
+        host kernel. It needs a base image too, but a jail template rather
+        than a disk image.
+      </p>
+      <h3>Networks</h3>
+      <p>
+        Defined on the <strong>Networks</strong> page. A network needs a
+        subnet and a bridge; the bridge has to exist on the host first.
+      </p>
+      <h3>Where a workload runs</h3>
+      <p>
+        Every cell is owned by exactly one Comb, and the Comb that owns it
+        runs it. The <strong>Cluster</strong> view on the Machine page
+        shows which.
+      </p>
+      <h3>Scripting against it</h3>
+      <p><code>apiary_restshimd</code> exposes the same read-only view as REST, for external tooling - Terraform, CI, a monitoring system:</p>
+      <pre><code>curl -H "Authorization: Bearer $APIARY_API_KEY" http://localhost:8081/v1/vms
+curl -H "Authorization: Bearer $APIARY_API_KEY" http://localhost:8081/v1/monitoring/health</code></pre>
+      <table class="hb-table">
+        <tr><th>Endpoint</th><th>What it returns</th></tr>
+        <tr><td><code>GET /v1/status</code></td><td>This Comb's status.</td></tr>
+        <tr><td><code>GET /v1/health</code></td><td>The Colony's health verdict.</td></tr>
+        <tr><td><code>GET /v1/monitoring/health</code></td><td>The Colony's verdict plus one row per Comb, with measurements.</td></tr>
+        <tr><td><code>GET /v1/vms</code></td><td>The VM inventory.</td></tr>
+        <tr><td><code>GET /v1/jails</code></td><td>The jail inventory.</td></tr>
+        <tr><td><code>GET /v1/networks</code></td><td>The network inventory.</td></tr>
+      </table>
+      <div class="hb-note">
+        A measurement that was not taken is absent, not zero - a monitoring
+        system that reads "memory available: 0" during an outage will page
+        an operator about a healthy machine.
+      </div>
+    </section>
+
+    <section class="panel handbook-group">
+      <h2 id="certificates">Certificates</h2>
+      <p class="sub">Every inter-host connection runs over TLS; a Comb's own serving certificate is what its peers pin.</p>
+      <h3>The everyday case</h3>
+      <p>
+        Issued automatically at install time and renewed without a
+        restart. The <strong>Certificates</strong> page shows what each
+        Comb holds and how long it has left. You do not normally need to
+        touch it.
+      </p>
+      <h3>Public certificates from Cloudflare</h3>
+      <p>
+        For a certificate from a public CA - so the Comb's name resolves
+        publicly and is trusted by browsers - set up the Cloudflare
+        integration once with the guided walkthrough:
+      </p>
+      <pre><code>/usr/local/libexec/apiary/apiaryctl cert-setup setup</code></pre>
+      <p>
+        It asks for a Cloudflare API token (read without echo, written to
+        a 0600 file), resolves the zone, validates the token against that
+        zone, asks for the naming suffix this integration may issue for,
+        then obtains the certificate. The suffix matters: an empty one is
+        refused rather than treated as a wildcard, since it is what stops
+        the saved integration from issuing for a name you did not mean to
+        give this Colony.
+      </p>
+      <p>Preparing a certificate for another Comb reuses it - no credential re-entry:</p>
+      <pre><code>/usr/local/libexec/apiary/apiaryctl cert-setup prepare --name host2.lab2.apiary.work</code></pre>
+      <p>
+        That prints a reservation ID, which the joining Comb presents when
+        it collects the certificate during the join (see
+        <a href="#join">Adding a Comb to a Colony</a>, step 5).
+      </p>
+      <h3>Rotating a certificate</h3>
+      <p>
+        A Comb's pinned certificate is replaced through a trust transition,
+        not by overwriting a file. The new certificate is staged, both are
+        trusted briefly, and then the old one is retired. A failed
+        transition leaves the previous certificate trusted and serving.
       </p>
     </section>
 
     <section class="panel handbook-group">
-      <h2 id="operate">Day-to-day operation</h2>
-      <p class="sub">What the web UI and CLI give an operator once a Colony is up.</p>
-      <dl class="terms">
-        <div class="term">
-          <dt>Cell lifecycle</dt>
-          <dd>Create, Stop, Start, Restart, and delete VMs and jails from the web UI; <code>CreateVM</code>/<code>CreateJail</code> and friends over the external gRPC/REST API for anything scripted.</dd>
-        </div>
-        <div class="term">
-          <dt>Evidence</dt>
-          <dd>Automated assumption checks, a Why-Not engine, and a resilience coverage map show what is actually true about the Colony right now, and what would break it.</dd>
-        </div>
-        <div class="term">
-          <dt>Replication</dt>
-          <dd>A VM or jail can name a <code>replica_node_id</code> to get real HAST-backed disk replication to another Comb - not automatic failover.</dd>
-        </div>
-        <div class="term">
-          <dt>Watchgoose heartbeat</dt>
-          <dd>Optional per-Comb heartbeat monitoring, enabled under Machine &rarr; Operations &rarr; Watchgoose monitoring.</dd>
-        </div>
-      </dl>
-      <p class="sub" style="margin-top:14px">
-        Runbooks:
-        <a href="https://github.com/glenjbarber/apiary/tree/main/docs/runbooks">docs/runbooks</a>.
+      <h2 id="troubleshooting">When something is wrong</h2>
+      <h3>Start with the Cluster view</h3>
+      <p>The Machine page's Cluster section shows every Comb's health verdict - five states, and one of them is the point:</p>
+      <table class="hb-table">
+        <tr><th>Verdict</th><th>Meaning</th></tr>
+        <tr><td><code>healthy</code></td><td>Observed, and nothing wrong.</td></tr>
+        <tr><td><code>degraded</code></td><td>Observed, and something is wrong.</td></tr>
+        <tr><td><code>stale</code></td><td>The observation is old.</td></tr>
+        <tr><td><code>unknown</code></td><td>There is no verdict. Not the same as healthy.</td></tr>
+        <tr><td><code>contradictory</code></td><td>The Combs disagree about this Comb.</td></tr>
+      </table>
+      <div class="hb-note">
+        An unreachable Comb and a Comb that was never reached both read
+        <code>unknown</code> - deliberately. Absence of a verdict is not a
+        verdict, and conflating the two would report health that was never
+        established.
+      </div>
+      <h3>The Recovery Handbook</h3>
+      <p>
+        The <strong>Recovery Handbook</strong> page is the built-in
+        diagnostic for a Colony that is not working. It gathers the
+        evidence - each member's state, the assumptions register, the
+        health signals - and produces a numbered procedure with a stop
+        condition on each step. It is deliberately offline: it gathers
+        what it can from this Comb and prints the procedure rather than
+        acting on the Colony, because a recovery procedure that acts on a
+        failing Colony is a recovery procedure that can make it worse.
       </p>
+      <h3>Command-line triage</h3>
+      <pre><code>service apiary_managerd status     # is it running?
+service apiary_raftd status
+sockstat -4 -l | grep 17700        # is managerd listening?</code></pre>
+      <h3>Restarting services</h3>
+      <p>The Machine page's per-service control restarts a service and confirms it came back. From the command line:</p>
+      <pre><code>/usr/local/libexec/apiary/apiaryctl force-restart</code></pre>
+      <p>
+        It restarts <code>managerd</code> then <code>raftd</code>,
+        confirming each by its own listener port, and
+        <strong>refuses to run on the Colony's current leader</strong> -
+        restarting <code>raftd</code> on the leader is the one restart a
+        Colony cannot absorb. It also refuses when it cannot determine
+        leadership, because an unanswered question is not a permission.
+      </p>
+      <h3>The trust store</h3>
+      <p>
+        If peers cannot verify each other, the Colony's peer trust store
+        may be empty - which happens on a Colony built before that store
+        existed. <code>pin-trusted-peers</code> backfills it:
+      </p>
+      <pre><code>/usr/local/libexec/apiary/apiaryctl pin-trusted-peers \
+    --target leader.example.com:17700 --bundle /tmp/certs.json</code></pre>
+      <p>
+        Every input certificate is parsed, evaluated, and matched before
+        the first pin is sent - a bundle whose fourth certificate is bad
+        produces zero pins, not three.
+      </p>
+    </section>
+
+    <section class="panel handbook-group">
+      <h2 id="commands">Command reference</h2>
+      <p class="sub"><code>apiaryctl</code> is installed at <code>/usr/local/libexec/apiary/apiaryctl</code> and is not on <code>PATH</code> - invoke it by its full path. Run <code>apiaryctl &lt;command&gt; --help</code> for the full flags of any one.</p>
+      <table class="hb-table">
+        <tr><th>Command</th><th>What it does</th><th>Root?</th></tr>
+        <tr><td><code>install</code></td><td>Generate this Comb's configuration, certificate and identity. Reports only unless <code>--apply</code>.</td><td>Yes</td></tr>
+        <tr><td><code>join-introduce</code></td><td>Start or poll a two-way Colony join. Prints values; submits no approvals.</td><td>For <code>--install-credentials</code></td></tr>
+        <tr><td><code>join-authorize</code></td><td>Authorize one Comb to join, by writing a single-use entry.</td><td>Yes</td></tr>
+        <tr><td><code>force-restart</code></td><td>Restart <code>managerd</code> then <code>raftd</code>, confirming each. Refuses on the leader.</td><td>&mdash;</td></tr>
+        <tr><td><code>pin-trusted-peers</code></td><td>Backfill the replicated peer trust store.</td><td>Yes</td></tr>
+        <tr><td><code>peer-credential-backfill</code></td><td>Install the Colony peer key on a Comb that predates automatic delivery.</td><td>Yes</td></tr>
+        <tr><td><code>restart-guardrail-provision</code></td><td>Generate the restart-guardrail token on a Colony that has none.</td><td>Yes</td></tr>
+        <tr><td><code>migrate-tls-dir</code></td><td>Move the serving certificate to the current default location. Reports only unless <code>--apply</code>.</td><td>Yes</td></tr>
+        <tr><td><code>colony-ca init</code></td><td>Create the Colony CA, on the first Comb of a Colony.</td><td>Yes</td></tr>
+        <tr><td><code>colony-ca issue-raft</code></td><td>Sign this Comb's raft certificate with the Colony CA.</td><td>Yes</td></tr>
+        <tr><td><code>cert-setup setup</code></td><td>Guided Cloudflare setup and certificate issuance.</td><td>Yes</td></tr>
+        <tr><td><code>cert-setup prepare</code></td><td>Prepare a certificate for a Comb that has not joined.</td><td>Yes</td></tr>
+        <tr><td><code>cert-setup status</code></td><td>Report the saved integration and the certificates held.</td><td>&mdash;</td></tr>
+      </table>
     </section>
 
     <section class="panel handbook-group" id="contributors">
@@ -218,9 +464,9 @@
     <section class="panel handbook-group">
       <h2 id="adrs">Design records</h2>
       <p class="sub">
-        The Handbook is a summary; the ADRs are the record. Every
-        design decision in Apiary, in order, with its reasoning and
-        status.
+        Everything above is self-contained - nothing here requires reading
+        an ADR first. For the reasoning behind a design, or the full
+        history of a decision, the primary source is below.
       </p>
       <div class="cta-row">
         <a class="btn ghost" href="https://github.com/glenjbarber/apiary/tree/main/docs/adr">Browse docs/adr</a>
