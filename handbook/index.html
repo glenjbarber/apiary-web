@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Handbook · Apiary</title>
+<meta name="description" content="The Apiary Handbook: how to install and operate a Colony, and how to build on the codebase.">
+<link rel="icon" href="../assets/apiary-logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="hex-field" aria-hidden="true"></div>
+<div class="wrap">
+
+  <header class="site">
+    <a class="brand" href="/">
+      <img src="../assets/apiary-logo.svg" alt="" width="150" height="72">
+    </a>
+    <nav class="site-nav">
+      <a href="/">Overview</a>
+      <a href="/handbook/" aria-current="page">Handbook</a>
+      <a href="/status.html">Build Status</a>
+      <a href="https://github.com/glenjbarber/apiary">GitHub</a>
+      <a href="https://github.com/sponsors/glenjbarber" class="nav-sponsor">Sponsor</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero handbook-hero">
+      <p class="eyebrow">Handbook</p>
+      <h1>Running Apiary,<br>and building <span class="accent">on</span> it.</h1>
+      <p class="lede">
+        One page split into two audiences: operators who run a Colony,
+        and contributors who work on the codebase underneath it. Both
+        halves link out to the primary source - ADRs, runbooks, and the
+        README - rather than duplicating it.
+      </p>
+    </section>
+
+    <nav class="handbook-toc" aria-label="Handbook contents">
+      <a href="#vocabulary">Vocabulary</a>
+      <a href="#install">Install a Comb</a>
+      <a href="#join">Join a Colony</a>
+      <a href="#operate">Day-to-day operation</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#repo-layout">Repository layout</a>
+      <a href="#build-test">Building and testing</a>
+      <a href="#adrs">Design records</a>
+    </nav>
+
+    <section class="panel handbook-group" id="operators">
+      <p class="eyebrow">For operators</p>
+      <h2 id="vocabulary">Vocabulary</h2>
+      <p class="sub">Apiary's own terms for the containment hierarchy it manages.</p>
+      <dl class="terms">
+        <div class="term">
+          <dt>Colony</dt>
+          <dd>The whole cluster: every Comb, and everything running on them, held together by a single Raft consensus group.</dd>
+        </div>
+        <div class="term">
+          <dt>Comb</dt>
+          <dd>One physical FreeBSD host. A Colony can be a single standalone Comb or several Combs joined together - both are first-class.</dd>
+        </div>
+        <div class="term">
+          <dt>Cell</dt>
+          <dd>One VM or jail. Placed on a Comb, reconciled continuously against its desired state, visible cluster-wide.</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="panel handbook-group">
+      <h2 id="install">Install a Comb</h2>
+      <p class="sub">From a bare FreeBSD host to an installed Comb.</p>
+      <p>
+        <code>apiaryctl install</code> takes a bare FreeBSD host - configuration,
+        certificates, and identity - from a root shell and nothing else. It
+        changes nothing without <code>--apply</code>, and the useful part of
+        its report is the list of what it decided <em>not</em> to overwrite,
+        and why.
+      </p>
+      <p class="sub" style="margin-top:14px">
+        Full walkthrough:
+        <a href="https://github.com/glenjbarber/apiary/blob/main/docs/adr/0147-automated-install-and-two-way-peer-authorized-join.md">ADR-0147, Part 1</a>.
+      </p>
+    </section>
+
+    <section class="panel handbook-group">
+      <h2 id="join">Join a Colony</h2>
+      <p class="sub">Adding a Comb to an existing Colony.</p>
+      <p>
+        A Comb can only join while the Colony's join window is open -
+        closed is the normal state, and a request against a closed
+        window is refused by name. Approval requires a live join window,
+        a matching unused entry in the root-owned authorization store,
+        and two approvals from distinct API keys presented to distinct
+        Combs, even when the Colony currently has one member. Raft member
+        traffic, and manager-to-manager peer calls, run over mutually
+        authenticated TLS by default.
+      </p>
+      <p class="sub" style="margin-top:14px">
+        Full flow:
+        <a href="https://github.com/glenjbarber/apiary/blob/main/docs/adr/0147-automated-install-and-two-way-peer-authorized-join.md">ADR-0147</a>,
+        <a href="https://github.com/glenjbarber/apiary/blob/main/docs/adr/0155-colony-certificate-authority.md">ADR-0155</a>.
+      </p>
+    </section>
+
+    <section class="panel handbook-group">
+      <h2 id="operate">Day-to-day operation</h2>
+      <p class="sub">What the web UI and CLI give an operator once a Colony is up.</p>
+      <dl class="terms">
+        <div class="term">
+          <dt>Cell lifecycle</dt>
+          <dd>Create, Stop, Start, Restart, and delete VMs and jails from the web UI; <code>CreateVM</code>/<code>CreateJail</code> and friends over the external gRPC/REST API for anything scripted.</dd>
+        </div>
+        <div class="term">
+          <dt>Evidence</dt>
+          <dd>Automated assumption checks, a Why-Not engine, and a resilience coverage map show what is actually true about the Colony right now, and what would break it.</dd>
+        </div>
+        <div class="term">
+          <dt>Replication</dt>
+          <dd>A VM or jail can name a <code>replica_node_id</code> to get real HAST-backed disk replication to another Comb - not automatic failover.</dd>
+        </div>
+        <div class="term">
+          <dt>Watchgoose heartbeat</dt>
+          <dd>Optional per-Comb heartbeat monitoring, enabled under Machine &rarr; Operations &rarr; Watchgoose monitoring.</dd>
+        </div>
+      </dl>
+      <p class="sub" style="margin-top:14px">
+        Runbooks:
+        <a href="https://github.com/glenjbarber/apiary/tree/main/docs/runbooks">docs/runbooks</a>.
+      </p>
+    </section>
+
+    <section class="panel handbook-group" id="contributors">
+      <p class="eyebrow">For contributors</p>
+      <h2 id="architecture">Architecture</h2>
+      <dl class="terms">
+        <div class="term">
+          <dt>Language</dt>
+          <dd>Go, across the entire stack.</dd>
+        </div>
+        <div class="term">
+          <dt>Hypervisor</dt>
+          <dd>bhyve, for both VMs and jails.</dd>
+        </div>
+        <div class="term">
+          <dt>Storage</dt>
+          <dd>ZFS, replicated node-to-node via HAST.</dd>
+        </div>
+        <div class="term">
+          <dt>Consensus</dt>
+          <dd>A dedicated raft agent (hashicorp/raft), run as a separate process from the management daemon over a schema-defined Unix domain socket protocol.</dd>
+        </div>
+        <div class="term">
+          <dt>External API</dt>
+          <dd>RPC-style first (CreateVM, MigrateVM, ...), with a REST translation layer on top.</dd>
+        </div>
+        <div class="term">
+          <dt>Frontend</dt>
+          <dd>A Go backend serving a JSON API, with HTMX handling interactive elements server-side.</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="panel handbook-group">
+      <h2 id="repo-layout">Repository layout</h2>
+      <dl class="terms">
+        <div class="term">
+          <dt><code>cmd/</code></dt>
+          <dd>Entry points: <code>raftd</code>, <code>managerd</code>, <code>frontend</code>, <code>restshimd</code>, <code>apiaryctl</code>, <code>apiaryinstall</code>, <code>versioncheck</code>.</dd>
+        </div>
+        <div class="term">
+          <dt><code>api/</code></dt>
+          <dd>Protobuf schema: <code>api/internalpb</code> (internal raft socket protocol) and <code>api/rpc</code> (external RPC API).</dd>
+        </div>
+        <div class="term">
+          <dt><code>internal/</code></dt>
+          <dd>Core logic, one package per feature or ADR - <code>bhyve</code>, <code>jail</code>, <code>zfs</code>, <code>hast</code>, <code>raft</code>, <code>manager</code>, <code>restshim</code>, <code>frontend</code>, and dozens more.</dd>
+        </div>
+        <div class="term">
+          <dt><code>web/</code></dt>
+          <dd>HTML templates and static assets for the frontend, embedded into the <code>frontend</code> binary at build time.</dd>
+        </div>
+        <div class="term">
+          <dt><code>docs/adr/</code></dt>
+          <dd>Architecture decision records - start here for why things are built the way they are.</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="panel handbook-group">
+      <h2 id="build-test">Building and testing</h2>
+      <p>
+        Standard Go tooling: <code>go build ./...</code>,
+        <code>go vet ./...</code>, <code>go test ./...</code>. Packages
+        that shell out to FreeBSD-only tools (<code>internal/zfs</code>,
+        <code>internal/jail</code>, <code>internal/hast</code>,
+        <code>internal/bhyve</code>) skip their integration tests
+        cleanly on a non-FreeBSD dev machine - cross-compile
+        (<code>GOOS=freebsd GOARCH=amd64 go test -c ./internal/&lt;pkg&gt;</code>)
+        and run the resulting binary on a FreeBSD host to exercise them
+        for real.
+      </p>
+      <p style="margin-top:12px">
+        Proto changes require <a href="https://buf.build">buf</a>
+        (<code>buf generate</code>); generated <code>.go</code> files
+        are committed, so this isn't needed just to build.
+        <code>cmd/frontend</code> links <code>internal/pam</code> (cgo)
+        for real PAM login and can't be cross-compiled from macOS -
+        build it natively on a real FreeBSD host instead.
+        <code>managerd</code>/<code>raftd</code>/<code>restshimd</code>
+        are unaffected.
+      </p>
+    </section>
+
+    <section class="panel handbook-group">
+      <h2 id="adrs">Design records</h2>
+      <p class="sub">
+        The Handbook is a summary; the ADRs are the record. Every
+        design decision in Apiary, in order, with its reasoning and
+        status.
+      </p>
+      <div class="cta-row">
+        <a class="btn ghost" href="https://github.com/glenjbarber/apiary/tree/main/docs/adr">Browse docs/adr</a>
+        <a class="btn ghost" href="https://github.com/glenjbarber/apiary/tree/main/docs/audits">Code audits</a>
+        <a class="btn ghost" href="https://github.com/glenjbarber/apiary/tree/main/docs/runbooks">Runbooks</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site">
+    <span>Apiary is open source, built and run out of a home lab.</span>
+    <span class="footer-links">
+      <a href="https://github.com/glenjbarber/apiary">github.com/glenjbarber/apiary</a>
+      <a href="https://www.facebook.com/ApiaryVE">Facebook</a>
+    </span>
+  </footer>
+
+</div>
+</body>
+</html>

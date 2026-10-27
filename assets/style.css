@@ -212,6 +212,32 @@ section.panel {
   margin-bottom: 28px;
 }
 
+.handbook-hero { margin-bottom: 28px; }
+
+.handbook-toc {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  margin-bottom: 28px;
+  padding: 16px 20px;
+  background: var(--bg-raised);
+  border: 1px solid var(--comb-line);
+  border-radius: 4px;
+}
+
+.handbook-toc a {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  color: var(--ink-dim);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--ink-faint);
+}
+
+.handbook-toc a:hover { color: var(--amber); border-bottom-color: var(--amber); }
+
+.handbook-group .eyebrow { margin-bottom: 2px; }
+.handbook-group p { color: var(--ink-dim); font-size: 0.92rem; line-height: 1.6; margin: 0; }
+
 section.panel h2 {
   font-family: var(--display);
   font-size: 1.35rem;
